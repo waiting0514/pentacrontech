@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>系統架構說明</title>
+<style>
+:root{
+  --bg:#f5f6f8; --surface:#fff; --surface2:#fafbfc; --line:#e3e6ea; --line2:#ccd2d9;
+  --tx:#191c21; --tx2:#606a78; --code-bg:#f1f3f6;
+  --blue:#1f5fa8; --blue-bg:#e9f1fb;
+  --orange:#b05226; --orange-bg:#fdeee9;
+  --purple:#6a49a8; --purple-bg:#f2ecfb;
+  --teal:#17716a; --teal-bg:#e6f5f4;
+  --wait:#8a5a08; --wait-bg:#fdf3e0; --wait-bd:#d9a03f;
+  --bad:#b3261e; --bad-bg:#fdecea; --bad-bd:#e39a94;
+  --sh:0 1px 2px rgba(16,24,40,.05),0 2px 6px rgba(16,24,40,.06);
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#121519; --surface:#1b1f25; --surface2:#21262d; --line:#2c323a; --line2:#3b424b;
+  --tx:#e9ebee; --tx2:#98a1ad; --code-bg:#262c34;
+  --blue:#8fbdf0; --blue-bg:#152436;
+  --orange:#f0a583; --orange-bg:#341d15;
+  --purple:#bda3ec; --purple-bg:#241b36;
+  --teal:#79cec8; --teal-bg:#122b2a;
+  --wait:#e0b567; --wait-bg:#30240f; --wait-bd:#b5852f;
+  --bad:#f2a49c; --bad-bg:#3a1a17; --bad-bd:#8f4a44;
+  --sh:0 1px 2px rgba(0,0,0,.35);
+}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);
+  font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC","Helvetica Neue",Arial,sans-serif;
+  font-size:14.5px;line-height:1.75;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 16px 64px}
+
+header{margin-bottom:18px}
+.eyebrow{font-size:12px;letter-spacing:.1em;color:var(--tx2);margin:0 0 4px}
+h1{font-size:24px;margin:0;font-weight:700;line-height:1.3}
+.hsub{font-size:13.5px;color:var(--tx2);margin:6px 0 0;max-width:760px}
+
+.grid{display:grid;grid-template-columns:230px minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:880px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+.toc{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:12px;box-shadow:var(--sh);
+  position:sticky;top:14px;max-height:calc(100vh - 28px);overflow-y:auto;font-size:13px}
+@media(max-width:880px){.toc{position:static}}
+.toc p{font-size:11.5px;font-weight:700;letter-spacing:.06em;color:var(--tx2);margin:2px 6px 6px}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc a{display:block;padding:5px 8px;border-radius:7px;color:var(--tx);text-decoration:none;line-height:1.4}
+.toc a:hover{background:var(--surface2)}
+.toc a.sub{padding-left:20px;color:var(--tx2);font-size:12.5px}
+.toc a.on{background:var(--blue-bg);color:var(--blue);font-weight:700}
+
+main{min-width:0}
+section{background:var(--surface);border:1px solid var(--line);border-radius:13px;box-shadow:var(--sh);
+  padding:20px 22px;margin-bottom:18px}
+@media(max-width:560px){section{padding:16px 14px}}
+h2{font-size:19px;margin:0 0 12px;line-height:1.4;display:flex;align-items:center;gap:10px}
+h2 .n{flex:0 0 26px;height:26px;border-radius:8px;background:var(--line);color:var(--tx2);
+  font-size:13px;display:grid;place-items:center}
+h3{font-size:15.5px;margin:22px 0 8px;line-height:1.45}
+h3:first-of-type{margin-top:4px}
+p{margin:0 0 10px}
+ul,ol.list{margin:0 0 10px;padding-left:22px}
+li{margin-bottom:3px}
+a{color:var(--blue)}
+code{font-family:Consolas,"Cascadia Mono",Menlo,monospace;font-size:.88em;background:var(--code-bg);
+  padding:1px 5px;border-radius:5px;overflow-wrap:anywhere}
+.muted{color:var(--tx2)}
+
+.tbl{overflow-x:auto;margin:0 0 12px;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface2);font-weight:700;color:var(--tx2);font-size:12.5px;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.callout{border:1px dashed;border-radius:10px;padding:9px 13px;margin:0 0 12px;font-size:13.5px}
+.callout.info{color:var(--blue);background:var(--blue-bg);border-color:var(--blue)}
+.callout.warn{color:var(--wait);background:var(--wait-bg);border-color:var(--wait-bd)}
+.callout code{background:transparent;padding:0}
+
+.pill{display:inline-block;font-size:11.5px;font-weight:700;padding:1px 9px;border-radius:999px;border:1px solid;white-space:nowrap}
+.pill.blue{color:var(--blue);background:var(--blue-bg);border-color:var(--blue)}
+.pill.orange{color:var(--orange);background:var(--orange-bg);border-color:var(--orange)}
+.pill.purple{color:var(--purple);background:var(--purple-bg);border-color:var(--purple)}
+.pill.teal{color:var(--teal);background:var(--teal-bg);border-color:var(--teal)}
+
+/* 分層圖 */
+.layers{display:grid;gap:10px;margin:4px 0 14px}
+.layer{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:stretch}
+@media(max-width:560px){.layer{grid-template-columns:1fr}}
+.layer-h{font-size:12px;font-weight:700;color:var(--tx2);display:flex;align-items:center}
+.boxes{display:flex;flex-wrap:wrap;gap:8px}
+.box{flex:1 1 150px;border:1px solid var(--line2);background:var(--surface2);border-radius:10px;padding:8px 11px;min-width:0}
+.box b{display:block;font-size:13.5px;overflow-wrap:anywhere}
+.box span{display:block;font-size:12px;color:var(--tx2);line-height:1.5}
+.box.blue{border-color:var(--blue);background:var(--blue-bg)} .box.blue b{color:var(--blue)}
+.box.orange{border-color:var(--orange);background:var(--orange-bg)} .box.orange b{color:var(--orange)}
+.box.purple{border-color:var(--purple);background:var(--purple-bg)} .box.purple b{color:var(--purple)}
+.box.teal{border-color:var(--teal);background:var(--teal-bg)} .box.teal b{color:var(--teal)}
+.down{text-align:center;color:var(--line2);font-size:13px;line-height:1;margin:-4px 0}
+
+/* 流程步驟 */
+.steps{list-style:none;margin:0 0 12px;padding:0;counter-reset:s}
+.steps>li{position:relative;padding:0 0 12px 38px;margin:0;counter-increment:s}
+.steps>li::before{content:counter(s);position:absolute;left:0;top:1px;width:24px;height:24px;border-radius:7px;
+  background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple);font-size:12px;font-weight:700;display:grid;place-items:center}
+.steps>li::after{content:"";position:absolute;left:12px;top:28px;bottom:2px;width:1px;background:var(--line2)}
+.steps>li:last-child::after{display:none}
+.steps.blue>li::before{background:var(--blue-bg);color:var(--blue);border-color:var(--blue)}
+.steps b{font-weight:700}
+.steps ul{margin:4px 0 0}
+
+.fig{margin:6px 0 14px;background:var(--surface2);border:1px solid var(--line);border-radius:11px;padding:14px;overflow-x:auto}
+.fig svg{display:block;width:100%;height:auto;min-width:520px}
+.fig figcaption{font-size:12.5px;color:var(--tx2);margin-top:8px}
+svg text{font-family:inherit}
+.sv-life{stroke:var(--line2);stroke-width:1.2;stroke-dasharray:4 4}
+.sv-head{fill:var(--surface);stroke:var(--line2)}
+.sv-headt{font-size:13px;font-weight:700;fill:var(--tx)}
+.sv-sub{font-size:11px;fill:var(--tx2)}
+.sv-msg{stroke:var(--blue);stroke-width:1.5;fill:none}
+.sv-msg.back{stroke:var(--teal)}
+.sv-msg.rest{stroke:var(--tx2);stroke-dasharray:5 4}
+.sv-lbl{font-size:12px;fill:var(--tx)}
+.sv-lbl code{font-size:11px}
+.sv-note{fill:var(--wait-bg);stroke:var(--wait-bd);stroke-dasharray:4 3}
+.sv-notet{font-size:11.5px;fill:var(--wait)}
+.sv-axis{stroke:var(--line2);stroke-width:1.2}
+.sv-tick{font-size:11px;fill:var(--tx2)}
+.sv-seg{fill:var(--purple-bg);stroke:var(--purple)}
+.sv-segt{font-size:11px;fill:var(--purple);font-weight:700}
+.sv-gap{fill:none;stroke:var(--orange);stroke-dasharray:4 3}
+.sv-gapt{font-size:11px;fill:var(--orange)}
+.sv-ref{stroke:var(--blue);stroke-width:1.5}
+.sv-reft{font-size:11px;fill:var(--blue);font-weight:700}
+.sv-map{stroke:var(--line2);stroke-dasharray:2 3}
+
+.issues{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.issue{border:1px solid var(--line);border-left:4px solid var(--bad-bd);border-radius:10px;padding:10px 14px;background:var(--surface2)}
+.issue.low{border-left-color:var(--line2)}
+.issue h4{margin:0 0 4px;font-size:14px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.issue h4 .sev{font-size:11px;font-weight:700;padding:0 8px;border-radius:999px;color:var(--bad);background:var(--bad-bg)}
+.issue.low h4 .sev{color:var(--tx2);background:var(--line)}
+.issue p{margin:0;font-size:13.5px}
+.issue .loc{font-size:12px;color:var(--tx2);margin-top:4px}
+.old{color:var(--tx2);text-decoration:line-through;text-decoration-color:var(--bad-bd)}
+.issue.done{border-left-color:var(--teal)}
+.issue.done h4 .sev{color:var(--teal);background:var(--teal-bg)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">AI Agency 多專案 CMS · 程式碼說明</p>
+  <h1>系統架構與模組說明</h1>
+  <p class="hsub">Laravel 12 前台 Blade、Vue 3 後台 SPA 與 REST API 的分層、權限、多語系、AI 計費與修正紀錄。內容依 2026-10-01 修正後的 main 分支程式碼整理。</p>
+</header>
+
+<div class="grid">
+  <nav class="toc" aria-label="目錄">
+    <p>目錄</p>
+    <ol>
+      <!-- 每個 section 一個 <li><a href="#id">1. 標題</a></li>；小節用 class="sub" -->
+<li><a href="#layers">1. 整體分層</a></li>
+<li><a href="#entry">2. 請求入口與 middleware</a></li>
+<li><a href="#auth">3. 認證與權限</a></li>
+<li><a class="sub" href="#auth-roles">角色與權限表</a></li>
+<li><a href="#api">4. API 格式與錯誤處理</a></li>
+<li><a href="#i18n">5. 多語系</a></li>
+<li><a href="#catalog">6. 產品、分類與圖片</a></li>
+<li><a href="#ai">7. AI 功能與預算控制</a></li>
+<li><a class="sub" href="#ai-flow">呼叫流程</a></li>
+<li><a class="sub" href="#ai-price">計價表</a></li>
+<li><a href="#forms">8. 前台表單、郵件與驗證碼</a></li>
+<li><a href="#jobs">9. 排程與指令</a></li>
+<li><a href="#diff">10. 與既有文件的差異</a></li>
+<li><a href="#issues">11. 已知問題與修正紀錄</a></li>
+
+    </ol>
+  </nav>
+
+  <main>
+<section id="layers">
+  <h2><span class="n">1</span>整體分層</h2>
+  <p>單一 Laravel 12 應用同時提供三種介面：Blade 伺服器渲染的<b>前台網站</b>、Vue 3 + Element Plus 的<b>後台 SPA</b>（<code>/admin</code>），以及後台使用的 <b>REST API</b>（<code>/api</code>）。前台與後台讀寫同一組 Eloquent Model。</p>
+  <div class="layers">
+    <div class="layer">
+      <div class="layer-h">介面</div>
+      <div class="boxes">
+        <div class="box teal"><b>前台 Blade</b><span>resources/views · Alpine.js · Tailwind</span></div>
+        <div class="box blue"><b>後台 SPA</b><span>resources/js/admin · Vue 3 · Pinia · Element Plus</span></div>
+      </div>
+    </div>
+    <div class="down">▼</div>
+    <div class="layer">
+      <div class="layer-h">路由與 middleware</div>
+      <div class="boxes">
+        <div class="box teal"><b>routes/web.php</b><span>Route::multilang · maintenance · SetLocale · session 登入</span></div>
+        <div class="box blue"><b>routes/api.php</b><span>auth:sanctum · active · role · ai_enabled</span></div>
+      </div>
+    </div>
+    <div class="down">▼</div>
+    <div class="layer">
+      <div class="layer-h">控制器</div>
+      <div class="boxes">
+        <div class="box teal"><b>Controllers/Frontend</b><span>頁面、聯絡表單、會員、詢價</span></div>
+        <div class="box blue"><b>Controllers/Api</b><span>CRUD、AI、用量、使用者、專案設定</span></div>
+      </div>
+    </div>
+    <div class="down">▼</div>
+    <div class="layer">
+      <div class="layer-h">服務與觀察者</div>
+      <div class="boxes">
+        <div class="box orange"><b>AiTextService · AiImageService</b><span>OpenAI、Clipdrop、Photoroom</span></div>
+        <div class="box orange"><b>AiCostControlService</b><span>預算檢查、用量紀錄</span></div>
+        <div class="box"><b>ImageService · SlugService</b><span>縮圖、slug 產生</span></div>
+        <div class="box"><b>ProjectMailService · CaptchaService</b><span>專案 SMTP、驗證碼</span></div>
+        <div class="box"><b>Observers/*</b><span>建立／更新時自動產生 slug</span></div>
+      </div>
+    </div>
+    <div class="down">▼</div>
+    <div class="layer">
+      <div class="layer-h">資料</div>
+      <div class="boxes">
+        <div class="box purple"><b>Models</b><span>spatie/laravel-translatable 多語欄位</span></div>
+        <div class="box purple"><b>MySQL · storage/app/public</b><span>資料與上傳圖片</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>位置</th><th>職責</th></tr></thead>
+    <tbody>
+      <tr><td><code>app/Http/Controllers/Frontend/</code></td><td>前台頁面：首頁、產品／分類、消息、知識庫、關於、聯絡、會員註冊登入、會員中心、詢價單</td></tr>
+      <tr><td><code>app/Http/Controllers/Api/</code></td><td>後台 API：產品、分類、輪播、消息、知識庫、上傳、AI、用量、使用者、專案設定；<code>Api/Admin/OrderController</code> 管理詢價單</td></tr>
+      <tr><td><code>app/Services/</code></td><td>AI 呼叫與計費、圖片處理、slug、郵件、驗證碼、RAG 產品搜尋</td></tr>
+      <tr><td><code>app/Observers/</code></td><td>產品、分類、消息、知識庫的 slug 自動產生與清理</td></tr>
+      <tr><td><code>resources/js/admin/</code></td><td>後台 SPA：router（權限守衛）、views、store（user、project、language、loading）</td></tr>
+      <tr><td><code>resources/js/services/</code></td><td>axios 實例 <code>http.js</code> 與各資源的 API 呼叫</td></tr>
+      <tr><td><code>config/ai_pricing.php</code> · <code>config/ai_prices.php</code></td><td>對客戶收費的固定台幣單價；各模型的實際 USD 成本</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="entry">
+  <h2><span class="n">2</span>請求入口與 middleware</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>入口</th><th>路由</th><th>middleware</th><th>說明</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pill teal">前台</span></td><td><code>Route::multilang(...)</code></td><td><code>web</code> + <code>SetLocale</code></td><td>每條路由註冊兩次：無前綴（預設語系）與 <code>/{locale}/...</code>，後者名稱加 <code>.localized</code></td></tr>
+      <tr><td><span class="pill teal">前台會員</span></td><td><code>/register</code> <code>/login</code> <code>/account*</code></td><td><code>maintenance</code>、<code>guest</code> / <code>auth</code></td><td>session 登入；只允許 <code>customer</code> 角色</td></tr>
+      <tr><td><span class="pill blue">後台 SPA</span></td><td><code>/admin/{any?}</code></td><td><code>web</code></td><td>一律回傳 <code>dashboard.blade.php</code>，由 Vue Router 接手</td></tr>
+      <tr><td><span class="pill blue">公開 API</span></td><td><code>POST /api/login</code>、<code>GET /api/languages</code>、<code>GET /api/translations/{locale}</code></td><td><code>api</code> + <code>SetApiLocale</code></td><td>無需登入</td></tr>
+      <tr><td><span class="pill blue">受保護 API</span></td><td>其餘 <code>/api/*</code></td><td><code>auth:sanctum</code>、<code>active</code>、<code>role:super-admin|admin|manager|editor</code></td><td>Bearer token；customer 角色被擋</td></tr>
+      <tr><td><span class="pill orange">AI API</span></td><td><code>/api/ai/*</code></td><td>上列 + <code>ai_enabled</code></td><td>專案關閉 AI 時回 403 <code>AI_DISABLED</code></td></tr>
+    </tbody>
+  </table></div>
+  <p><code>SetLocale</code>（前台）的判斷：網址帶預設語系前綴時 301 轉到無前綴網址；帶其他有效語系時設定該語系；沒有前綴時使用預設語系；無效前綴回 404。<code>SetApiLocale</code>（API）只看 <code>Accept-Language</code> 標頭，且只接受 <code>zh-TW</code> 與 <code>en</code>。</p>
+</section>
+
+<section id="auth">
+  <h2><span class="n">3</span>認證與權限</h2>
+  <p>系統有兩套互不相通的登入：</p>
+  <ol class="steps blue">
+    <li><b>後台</b>：<code>AuthController::createToken</code> 以 <code>username</code> + 密碼驗證，檢查 <code>is_active</code>，更新 <code>last_login_at</code>，回傳 Sanctum token。前端存入 <code>localStorage.api_token</code>，<code>http.js</code> 在每個請求加上 <code>Authorization: Bearer</code>；收到 401 時清除 token 並導回 <code>/admin/login</code>。</li>
+    <li><b>前台</b>：<code>Frontend\Auth\LoginController</code> 用 <code>Auth::attempt</code> 建立 session；登入後不是 <code>customer</code> 角色就立即登出並顯示「此帳號無法使用前台登入。」註冊時自動指派 <code>customer</code>。</li>
+  </ol>
+  <h3>權限檢查的三層</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>層</th><th>位置</th><th>做法</th></tr></thead>
+    <tbody>
+      <tr><td>選單顯示</td><td><code>layout/components/Sidebar.vue</code></td><td>依 route <code>meta.permission</code> 以 <code>can()</code> 過濾；super-admin 全部可見</td></tr>
+      <tr><td>路由守衛</td><td><code>router/index.js</code> · <code>beforeEach</code></td><td>無 token 導向登入；缺權限導回 <code>/admin/dashboard</code></td></tr>
+      <tr><td>API</td><td>各控制器 <code>$this->authorize('...')</code></td><td>搭配 <code>Gate::before</code> 讓 super-admin 通過所有檢查。所有後台資源控制器（含分類、產品圖片、用量、專案設定、詢價訂單）都有呼叫 <code>authorize</code>；富文字上傳改以 <code>canAny</code> 檢查</td></tr>
+    </tbody>
+  </table></div>
+  <h3 id="auth-roles">角色與權限表</h3>
+  <p>來源：<code>database/seeders/RolesAndPermissionsSeeder.php</code>。</p>
+  <div class="tbl"><table>
+    <thead><tr><th>權限</th><th>super-admin</th><th>manager（管理員）</th><th>editor（編輯者）</th><th>後台頁面</th></tr></thead>
+    <tbody>
+      <tr><td><code>product.view/create/update</code></td><td>✓</td><td>✓</td><td>✓</td><td>產品管理、產品分類</td></tr>
+      <tr><td><code>product.delete</code></td><td>✓</td><td>✓</td><td>—</td><td>產品「刪除」按鈕</td></tr>
+      <tr><td><code>news.*</code> · <code>knowledge.*</code></td><td>✓</td><td>✓</td><td>✓</td><td>最新消息、知識庫與其分類</td></tr>
+      <tr><td><code>banner.manage</code></td><td>✓</td><td>✓</td><td>✓</td><td>輪播圖管理</td></tr>
+      <tr><td><code>ai.use</code></td><td>✓</td><td>✓</td><td>✓</td><td>AI 工具、AI 辨識、AI 翻譯</td></tr>
+      <tr><td><code>user.manage</code></td><td>✓</td><td>✓</td><td>—</td><td>使用者管理</td></tr>
+      <tr><td><code>report.view_cost</code></td><td>✓</td><td>✓</td><td>—</td><td>（程式中未使用）</td></tr>
+      <tr><td><code>system.manage</code></td><td>✓</td><td>—</td><td>—</td><td>用量監控、系統設定</td></tr>
+      <tr><td><code>order.view</code></td><td>✓</td><td>✓</td><td>—</td><td>詢價訂單</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout info">使用者管理的額外規則（<code>UserController</code>）：新增時角色只能是 <code>manager</code> 或 <code>editor</code>；非 super-admin 看不到也不能編輯 super-admin；帳號 <code>admin</code> 與自己不可停用或刪除；只有 super-admin 能刪除使用者。</div>
+</section>
+
+<section id="api">
+  <h2><span class="n">4</span>API 格式與錯誤處理</h2>
+  <p>控制器使用 <code>App\Traits\ApiResponse</code>：<code>successResponse($data, $message = 'Operation successful', $code = 200)</code> 與 <code>errorResponse($message, $errorCode, $httpCode = 400, $errors = [])</code>。例外在 <code>bootstrap/app.php</code> 統一轉成同樣格式（僅限 <code>api/*</code> 或要求 JSON 的請求）：</p>
+  <div class="tbl"><table>
+    <thead><tr><th>例外</th><th>HTTP</th><th><code>error_code</code></th><th>前端顯示（<code>http.js</code>）</th></tr></thead>
+    <tbody>
+      <tr><td>ValidationException</td><td class="num">422</td><td><code>VALIDATION_ERROR</code></td><td>「資料驗證失敗，請檢查輸入欄位」；欄位錯誤在 <code>errors</code></td></tr>
+      <tr><td>ModelNotFoundException</td><td class="num">404</td><td><code>RESOURCE_NOT_FOUND</code></td><td>「查無此資料」</td></tr>
+      <tr><td>AuthenticationException</td><td class="num">401</td><td><code>UNAUTHENTICATED</code></td><td>不顯示訊息，清除 token 並導回登入頁</td></tr>
+      <tr><td>其他 Throwable</td><td class="num">500</td><td><code>SERVER_ERROR</code></td><td>「系統內部錯誤…」；debug 模式時 message 為原始錯誤</td></tr>
+    </tbody>
+  </table></div>
+  <p>前端先用 <code>error_code</code> 查 <code>resources/js/constants/errors.ts</code>，查不到才用後端 <code>message</code>，最後退回「系統發生未預期的錯誤」。<code>http.js</code> 的請求攔截器也會啟動全域 loading 遮罩，除非請求設定 <code>globalLoading: false</code>。</p>
+</section>
+
+<section id="i18n">
+  <h2><span class="n">5</span>多語系</h2>
+  <ul>
+    <li><b>語系清單</b>：<code>languages</code> 資料表（<code>Language::getActive()</code>、<code>getDefault()</code>）。seeder 建立 <code>en</code>（預設）與 <code>zh-TW</code>。</li>
+    <li><b>內容欄位</b>：Model 使用 <code>spatie/laravel-translatable</code> 的 <code>HasTranslations</code>，<code>$translatable</code> 欄位以 JSON 儲存，鍵為語系碼（<code>zh-TW</code>、<code>en</code>）。API 驗證時 <code>name.zh-TW</code> 為必填。</li>
+    <li><b>前台連結</b>：<code>lroute($name)</code>（<code>app/Helpers/routes.php</code>）在非預設語系時改用 <code>$name.localized</code> 路由並帶入 <code>locale</code>。</li>
+    <li><b>後台介面文字</b>：<code>admin/main.js</code> 啟動時呼叫 <code>/api/translations/{locale}?scope=admin</code>，把 <code>lang/{locale}/admin.php</code> 攤平成 key 對照表，提供全域 <code>$t()</code>；後端快取 3600 秒。</li>
+  </ul>
+</section>
+
+<section id="catalog">
+  <h2><span class="n">6</span>產品、分類與圖片</h2>
+  <h3>分類樹</h3>
+  <ul>
+    <li><code>ProductCategory</code> 以 <code>parent_id</code> 形成無限層級；<code>children()</code> 取直接子層。</li>
+    <li>前台 <code>ProductController::getCategoryIdsRecursive</code> 遞迴收集分類與所有子孫 ID，分類頁列出其中所有產品（每頁 12 筆）。</li>
+    <li>更新時拒絕把自己（<code>INVALID_PARENT</code>）或子孫（<code>LOOP_RELATION</code>）設為父層。</li>
+    <li>刪除規則：系統分類（<code>is_system</code>，即「未分類」）回 403；仍有子分類回 422 <code>HAS_CHILD_CATEGORIES</code>；否則把其下產品移到預設分類後刪除，回傳 <code>reassigned_products</code>。</li>
+  </ul>
+  <h3>Slug 自動產生</h3>
+  <ol class="steps">
+    <li><b>Observer creating/updating</b>：有手動填 slug 就 <code>Str::slug()</code> 清理；名稱改變且未改 slug 時重新產生。</li>
+    <li><b>SlugService::buildBaseSlug</b>：先試 <code>Str::slug(名稱)</code>，中文結果為空時改用 <code>overtrue/pinyin</code> 轉拼音，仍為空則用 <code>item-</code> + md5 前 8 碼。名稱優先取 <code>zh-TW</code>，再取 <code>en</code>。</li>
+    <li><b>ensureUnique</b>：同專案內重複時加上 <code>-1</code>、<code>-2</code>…</li>
+  </ol>
+  <h3>圖片處理（<code>ImageService</code>，Intervention Image）</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>類型</th><th>上傳上限</th><th>輸出</th><th>路徑</th></tr></thead>
+    <tbody>
+      <tr><td>產品圖</td><td>jpg/png/webp，每張 2MB，一次最多 10 張</td><td>補白成正方形 JPG：main 1000、thumb 500、tiny 150 px，品質 80</td><td><code>uploads/products/{size}/</code></td></tr>
+      <tr><td>輪播圖</td><td>電腦版 5MB、手機版 2MB</td><td>等比縮小至 1920 / 800 px 寬，品質 85</td><td><code>uploads/banners/{pc|mobile}/</code></td></tr>
+      <tr><td>分類縮圖</td><td>jpg/png/webp，2MB</td><td>等比縮小至 600×600 內，品質 80</td><td><code>uploads/categories/</code></td></tr>
+    </tbody>
+  </table></div>
+  <p>資料庫存相對路徑，API Resource 以 <code>asset('storage/' . $path)</code> 轉成完整網址。</p>
+  <div class="callout info">前台的「加入詢價車」、詢價車圖示與產品價格區塊目前以 <code>@if(false)</code> 隱藏；<code>/inquiry</code> 路由、<code>InquiryController</code> 與後台「詢價訂單」仍然存在，Alpine 的購物車 store 以 <code>localStorage.inquiry_cart</code> 保存。</div>
+</section>
+
+<section id="ai">
+  <h2><span class="n">7</span>AI 功能與預算控制</h2>
+  <p>每個 AI 功能都以<b>固定台幣單價</b>從專案年度預算扣款，同時記錄實際的 USD 成本供超級管理員對帳。預算與用量存在 <code>projects.yearly_budget_twd</code> / <code>yearly_usage_twd</code>。</p>
+  <h3 id="ai-flow">呼叫流程</h3>
+  <figure class="fig">
+    <svg viewBox="0 0 680 400" role="img" aria-label="AI 呼叫與扣款時序圖">
+      <defs>
+        <marker id="ar-ai" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M1 1L9 5L1 9" fill="none" stroke="context-stroke" stroke-width="1.6"/>
+        </marker>
+      </defs>
+      <rect class="sv-head" x="10" y="10" width="140" height="44" rx="9"/>
+      <text class="sv-headt" x="80" y="30" text-anchor="middle">後台 SPA</text>
+      <text class="sv-sub" x="80" y="46" text-anchor="middle">aiService.js</text>
+      <rect class="sv-head" x="190" y="10" width="140" height="44" rx="9"/>
+      <text class="sv-headt" x="260" y="30" text-anchor="middle">API 控制器</text>
+      <text class="sv-sub" x="260" y="46" text-anchor="middle">ai_enabled · authorize</text>
+      <rect class="sv-head" x="370" y="10" width="140" height="44" rx="9"/>
+      <text class="sv-headt" x="440" y="30" text-anchor="middle">AiCostControl</text>
+      <text class="sv-sub" x="440" y="46" text-anchor="middle">Service</text>
+      <rect class="sv-head" x="540" y="10" width="130" height="44" rx="9"/>
+      <text class="sv-headt" x="605" y="30" text-anchor="middle">外部 AI</text>
+      <text class="sv-sub" x="605" y="46" text-anchor="middle">OpenAI 等</text>
+      <line class="sv-life" x1="80" y1="54" x2="80" y2="390"/>
+      <line class="sv-life" x1="260" y1="54" x2="260" y2="390"/>
+      <line class="sv-life" x1="440" y1="54" x2="440" y2="390"/>
+      <line class="sv-life" x1="605" y1="54" x2="605" y2="390"/>
+      <path class="sv-msg" d="M82 90 H256" marker-end="url(#ar-ai)"/>
+      <text class="sv-lbl" x="170" y="83" text-anchor="middle">POST /api/ai/chat</text>
+      <path class="sv-msg" d="M262 130 H436" marker-end="url(#ar-ai)"/>
+      <text class="sv-lbl" x="350" y="123" text-anchor="middle">checkBudget(單價)</text>
+      <path class="sv-msg back" d="M438 160 H264" marker-end="url(#ar-ai)"/>
+      <text class="sv-lbl" x="350" y="153" text-anchor="middle">剩餘 ≥ 單價？</text>
+      <path class="sv-msg" d="M262 205 H601" marker-end="url(#ar-ai)"/>
+      <text class="sv-lbl" x="430" y="198" text-anchor="middle">呼叫模型</text>
+      <path class="sv-msg back" d="M603 240 H264" marker-end="url(#ar-ai)"/>
+      <text class="sv-lbl" x="430" y="233" text-anchor="middle">回應 + tokens</text>
+      <path class="sv-msg" d="M262 285 H436" marker-end="url(#ar-ai)"/>
+      <text class="sv-lbl" x="350" y="278" text-anchor="middle">recordUsage · incrementUsage</text>
+      <path class="sv-msg back" d="M258 335 H84" marker-end="url(#ar-ai)"/>
+      <text class="sv-lbl" x="170" y="328" text-anchor="middle">{ success, data }</text>
+      <rect class="sv-note" x="455" y="300" width="215" height="70" rx="6"/>
+      <text class="sv-notet" x="465" y="322">失敗時記一筆 status=failed、</text>
+      <text class="sv-notet" x="465" y="342">display_cost_twd=0，不扣預算，</text>
+      <text class="sv-notet" x="465" y="362">再把例外往上拋。</text>
+    </svg>
+    <figcaption>藍色為請求、青綠色為回應。預算不足時服務丟出 <code>Project budget exceeded</code>，不會呼叫外部 API。</figcaption>
+  </figure>
+  <h3 id="ai-price">計價表</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>功能（<code>feature</code>）</th><th>API</th><th>外部服務</th><th class="num">扣款 NT$</th></tr></thead>
+    <tbody>
+      <tr><td><code>chat</code></td><td><code>POST /api/ai/chat</code></td><td>OpenAI <code>gpt-4o-mini</code></td><td class="num">3</td></tr>
+      <tr><td><code>translation</code></td><td><code>POST /api/ai/translate</code>（單筆或 batch）</td><td>OpenAI</td><td class="num">3</td></tr>
+      <tr><td><code>vision_parse</code></td><td><code>POST /api/ai/parse-image</code></td><td>OpenAI <code>gpt-4o</code></td><td class="num">10</td></tr>
+      <tr><td><code>vision_parse_multi</code></td><td><code>POST /api/ai/parse-images</code>（1–5 張）</td><td>OpenAI <code>gpt-4o</code></td><td class="num">15</td></tr>
+      <tr><td><code>remove_bg</code></td><td><code>POST /api/ai/remove-background</code></td><td>Clipdrop</td><td class="num">5</td></tr>
+      <tr><td><code>scene_gen</code></td><td><code>POST /api/ai/generate-scene</code></td><td>Photoroom</td><td class="num">8</td></tr>
+    </tbody>
+  </table></div>
+  <p>單價在 <code>config/ai_pricing.php</code>，未列出的功能用 <code>default</code> 10。USD 成本：OpenAI 依 <code>config/ai_prices.php</code> 的每 token 單價計算；圖片服務用估計值（Photoroom 0.05、Clipdrop 0.03）。AI 圖片上傳上限 10MB。</p>
+  <p><b>RAG</b>：<code>chat</code> 帶 <code>rag_query</code> 時，<code>RagService::searchProducts</code> 以 LIKE 搜尋產品名稱、描述與規格，取前 5 筆附加到 system prompt。</p>
+  <p><b>用量頁</b>：<code>/api/usage/current</code>、<code>/logs</code>（每頁 20 筆）、<code>/statistics</code>；非 super-admin 查不到 <code>cost_usd</code> 與 token 欄位。</p>
+</section>
+
+<section id="forms">
+  <h2><span class="n">8</span>前台表單、郵件與驗證碼</h2>
+  <ul>
+    <li><b>聯絡表單</b>（<code>ContactController::submit</code>）：驗證姓名、Email、訊息（上限 2000 字）→ 驗證碼 → 以專案 SMTP 寄「網站聯絡表單通知」到 <code>contact_email</code>。寄信例外會被吞掉，使用者仍看到成功訊息。</li>
+    <li><b>詢價單</b>（<code>InquiryController::store</code>）：驗證碼 → 驗證欄位 → transaction 建立 <code>orders</code> 與 <code>order_items</code>（價格取自產品目前價格）→ 寄 <code>InquirySubmittedMail</code>。前台入口目前隱藏。</li>
+    <li><b>ProjectMailService</b>：專案有 <code>smtp_host</code> 與 <code>smtp_username</code> 時建立該專案專屬 mailer（預設 port 587、tls），否則用 Laravel 預設 mailer。<code>smtp_password</code> 以 <code>encrypted</code> cast 儲存並列在 <code>$hidden</code>。</li>
+    <li><b>CaptchaService</b>：依 <code>captcha_provider</code>（<code>none</code> / <code>recaptcha</code> / <code>turnstile</code>）向 Google 或 Cloudflare 的 siteverify 驗證。</li>
+    <li><b>測試信</b>：<code>POST /api/projects/{id}/test-smtp</code>，未設定 SMTP 或聯絡信箱時回 422。</li>
+  </ul>
+</section>
+
+<section id="jobs">
+  <h2><span class="n">9</span>排程與指令</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>指令</th><th>排程</th><th>作用</th></tr></thead>
+    <tbody>
+      <tr><td><code>usage:reset-yearly</code></td><td>每年 1/1 00:00</td><td>所有專案的 <code>yearly_usage_twd</code> 歸零</td></tr>
+      <tr><td><code>seo:generate-sitemap</code></td><td>手動</td><td>以 spatie/laravel-sitemap 寫出 <code>public/sitemap.xml</code></td></tr>
+    </tbody>
+  </table></div>
+  <p><code>/robots.txt</code> 由 web 路由動態產生，禁止 <code>/admin</code> 與 <code>/api</code>。</p>
+</section>
+
+<section id="diff">
+  <h2><span class="n">10</span>與既有文件的差異</h2>
+  <p>比對 <code>CLAUDE.md</code> 與目前程式碼：</p>
+  <div class="tbl"><table>
+    <thead><tr><th>項目</th><th>CLAUDE.md</th><th>目前程式碼</th></tr></thead>
+    <tbody>
+      <tr><td>AI 預算</td><td class="old">每月 USD 預算</td><td>每年 TWD 預算 <code>yearly_budget_twd</code>，固定單價扣款，1/1 歸零</td></tr>
+      <tr><td>角色</td><td class="old">super-admin、admin</td><td>super-admin、manager、editor（後台）與 customer（前台）；<code>admin</code> 角色只出現在 API middleware，seeder 未建立</td></tr>
+      <tr><td>多語欄位</td><td class="old"><code>$casts = ['name' => 'array']</code>，<code>$product->name['zh']</code></td><td><code>spatie/laravel-translatable</code>，語系鍵為 <code>zh-TW</code>、<code>en</code></td></tr>
+      <tr><td>測試帳號</td><td class="old"><code>admin@example.com</code> / <code>admin123</code></td><td>後台以帳號登入：<code>admin</code> / <code>admin123</code>；<code>test</code> / <code>password</code></td></tr>
+      <tr><td>開發指令</td><td class="old"><code>./vendor/bin/sail ...</code></td><td>在 Windows Git Bash 中 Sail 回報不支援的作業系統，需改用 <code>docker compose</code> 或 WSL2</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="issues">
+  <h2><span class="n">11</span>已知問題與修正紀錄</h2>
+  <p>2026-10-01 已修正下列 14 項問題（已在 Docker 環境 <code>migrate</code> 並通過 <code>artisan test</code>）。新增的回歸測試在 <code>tests/Feature/KnownIssuesFixTest.php</code>。</p>
+  <ul class="issues">
+    <li class="issue done">
+      <h4><span class="sev">已修正 · 安全</span>專案設定 API 沒有權限檢查</h4>
+      <p><code>ProjectController</code> 的 <code>store</code>、<code>update</code>、<code>destroy</code>、<code>switch</code>、<code>testSmtp</code> 加上 <code>authorize('system.manage')</code>；<code>switch</code> 不再寫 session。</p>
+      <p class="loc">app/Http/Controllers/Api/ProjectController.php</p>
+    </li>
+    <li class="issue done">
+      <h4><span class="sev">已修正 · 安全</span>驗證碼 Secret Key 明文儲存並回傳</h4>
+      <p><code>recaptcha_secret_key</code>、<code>turnstile_secret_key</code> 改用 <code>encrypted</code> cast 並加入 <code>$hidden</code>；API 只回傳 <code>has_recaptcha_secret_key</code>、<code>has_turnstile_secret_key</code> 旗標；留空不覆蓋。新 migration 把欄位改成 <code>text</code> 並加密既有資料。後台設定頁不再預填金鑰。</p>
+      <p class="loc">Project.php；ProjectController::current／update；settings/index.vue；2026_10_01_000001 migration</p>
+    </li>
+    <li class="issue done">
+      <h4><span class="sev">已修正 · 安全</span>多個 API 控制器沒有權限檢查</h4>
+      <p>三種分類控制器依 view／create／update／delete 對應各自權限；產品圖片需 <code>product.update</code>；詢價訂單需 <code>order.view</code>；用量需 <code>system.manage</code>；富文字上傳需具備任一內容編輯權限（<code>product.update</code>、<code>news.update</code>、<code>knowledge.update</code>、<code>banner.manage</code>、<code>system.manage</code>）。</p>
+      <p class="loc">ProductCategoryController、NewsCategoryController、KnowledgeCategoryController、ProductImageController、ImageUploadController、UsageController、Api/Admin/OrderController</p>
+    </li>
+    <li class="issue done">
+      <h4><span class="sev">已修正</span><code>order.view</code> 權限不存在</h4>
+      <p>seeder 建立 <code>order.view</code> 並指派給 manager；editor 仍不可見。既有環境需重跑 <code>RolesAndPermissionsSeeder</code>。</p>
+      <p class="loc">RolesAndPermissionsSeeder</p>
+    </li>
+    <li class="issue done">
+      <h4><span class="sev">已修正</span>維護模式只擋首頁</h4>
+      <p>新增 <code>EnsureNotInMaintenance</code> middleware（別名 <code>maintenance</code>）套用到整個前台路由群組，維護期間所有前台頁面回 503；移除 <code>HomeController</code> 內的判斷。</p>
+      <p class="loc">app/Http/Middleware/EnsureNotInMaintenance.php；routes/web.php</p>
+    </li>
+    <li class="issue done">
+      <h4><span class="sev">已修正</span>RAG 搜尋查不到中文內容</h4>
+      <p>JSON 路徑由 <code>name->zh</code>、<code>description->zh</code> 改為 <code>zh-TW</code>。</p>
+      <p class="loc">app/Services/RagService.php</p>
+    </li>
+    <li class="issue done">
+      <h4><span class="sev">已修正</span>用量統計顯示 NT$NaN</h4>
+      <p><code>SUM()</code> 改用 <code>COALESCE(SUM(...), 0)</code>。</p>
+      <p class="loc">UsageController::statistics</p>
+    </li>
+    <li class="issue done">
+      <h4><span class="sev">已修正</span>後台總覽的預算可能顯示 NT$0</h4>
+      <p>總覽載入統計前，若尚未取得使用者資料先 <code>fetchUser()</code>。</p>
+      <p class="loc">views/dashboard/index.vue · loadStats</p>
+    </li>
+    <li class="issue done">
+      <h4><span class="sev">已修正</span>前台登入／註冊頁沒有網站資訊與多語系</h4>
+      <p><code>/login</code>、<code>/register</code> 的 GET 改為 <code>Route::multilang</code>；header、footer、meta partial 在沒有 <code>$site</code> 時取第一個專案。登入／註冊連結尚未全面改用 <code>lroute()</code>。</p>
+      <p class="loc">routes/web.php；resources/views/partials/*</p>
+    </li>
+    <li class="issue done">
+      <h4><span class="sev">已修正</span>前台登入沒檢查帳號停用</h4>
+      <p><code>LoginController::store</code> 檢查 <code>is_active</code>，停用帳號登出並顯示 <code>frontend.auth.inactive</code>。</p>
+      <p class="loc">Frontend/Auth/LoginController.php；lang/*/frontend.php</p>
+    </li>
+    <li class="issue done">
+      <h4><span class="sev">已修正</span>側邊選單的隱藏條件不會生效</h4>
+      <p>「隱藏 AI 工具」與「AI 關閉時隱藏用量監控」移到權限判斷之前。</p>
+      <p class="loc">layout/components/Sidebar.vue · menuItems</p>
+    </li>
+    <li class="issue done">
+      <h4><span class="sev">已修正 · 維護性</span>目前專案的判斷不一致</h4>
+      <p><code>UsageController</code> 與 <code>AiCostControlService::getCurrentProject()</code> 一律使用 <code>Project::first()</code>，不再讀 session。</p>
+      <p class="loc">AiCostControlService；UsageController；ProjectController::switch</p>
+    </li>
+    <li class="issue done">
+      <h4><span class="sev">已修正 · 維護性</span>排程重複定義</h4>
+      <p>移除 <code>bootstrap/app.php</code> 的 <code>withSchedule</code>，只保留 <code>routes/console.php</code>。</p>
+      <p class="loc">bootstrap/app.php；routes/console.php</p>
+    </li>
+    <li class="issue done">
+      <h4><span class="sev">已修正 · 其他</span>零碎問題</h4>
+      <p>移除 ；seeder 的 manager 加上 <code>username: manager</code>；前台產品卡片摘要加 <code>strip_tags</code>。</p>
+      <p class="loc">routes/api.php；RolesAndPermissionsSeeder；products/index.blade.php</p>
+    </li>
+  </ul>
+</section>
+
+  </main>
+</div>
+</div>
+
+<script>
+// 目錄隨捲動標示目前章節
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+  var targets = links.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+  function update(){
+    var idx = 0;
+    targets.forEach(function(t, k){ if (t && t.getBoundingClientRect().top < 120) idx = k; });
+    links.forEach(function(a, k){ a.classList.toggle('on', k === idx); });
+  }
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+})();
+</script>
+</body>
+</html>

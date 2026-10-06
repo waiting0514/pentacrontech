@@ -1,0 +1,520 @@
+{
+  "lang": "zh-Hant",
+  "output": "docs/系統操作流程.html",
+  "imageDir": "docs/specs/img/system",
+  "title": "系統操作流程",
+  "eyebrow": "AI Agency 多專案 CMS",
+  "heading": "前台與後台操作流程",
+  "subtitle": "從訪客瀏覽、會員註冊，到後台管理產品、內容、AI 工具與系統設定，共 33 個操作步驟。截圖取自本機開發環境（2026-09-30）。",
+  "overview": {
+    "title": "系統總覽",
+    "desc": "左欄是訪客與會員在前台的操作，右欄是管理員在後台（/admin）的操作；後台群組依側邊選單順序排列。點任一方塊可跳到該步驟。"
+  },
+  "groups": [
+    {
+      "id": "site",
+      "name": "前台瀏覽",
+      "icon": "home",
+      "color": "blue"
+    },
+    {
+      "id": "member",
+      "name": "前台會員",
+      "icon": "user",
+      "color": "teal"
+    },
+    {
+      "id": "entry",
+      "name": "後台入口",
+      "icon": "lock",
+      "color": "slate"
+    },
+    {
+      "id": "content",
+      "name": "輪播與內容",
+      "icon": "file",
+      "color": "purple"
+    },
+    {
+      "id": "catalog",
+      "name": "產品管理",
+      "icon": "box",
+      "color": "orange"
+    },
+    {
+      "id": "ai",
+      "name": "AI 功能",
+      "icon": "chart",
+      "color": "rose"
+    },
+    {
+      "id": "ops",
+      "name": "營運與設定",
+      "icon": "settings",
+      "color": "green"
+    }
+  ],
+  "layout": [
+    [
+      "site",
+      "member",
+      "entry",
+      "ai"
+    ],
+    [
+      "catalog",
+      "content",
+      "ops"
+    ]
+  ],
+  "steps": [
+    {
+      "id": "site-home",
+      "group": "site",
+      "icon": "home",
+      "image": "z-home.png",
+      "title": "首頁與語言切換",
+      "short": "首頁與語言切換",
+      "desc": "首頁依序顯示輪播圖、「精選分類」、「精選產品」與「最新消息」。右上角切換「繁體中文」／「English」，網址會加上或移除語系前綴（例如 /zh-TW）。",
+      "note": "預設語系（目前為 English）使用不帶前綴的網址；以預設語系前綴開啟時會 301 轉回無前綴網址。",
+      "noteType": "tip"
+    },
+    {
+      "id": "site-products",
+      "group": "site",
+      "icon": "grid",
+      "image": "z-products.png",
+      "title": "瀏覽所有分類",
+      "short": "瀏覽所有分類",
+      "desc": "點選單「產品」進入「所有分類」，每張卡片是一個啟用中的分類，點「探索此分類的精選商品 →」進入分類頁。"
+    },
+    {
+      "id": "site-category",
+      "group": "site",
+      "icon": "list",
+      "image": "z-category.png",
+      "title": "分類頁與樹狀導覽",
+      "short": "分類頁與樹狀導覽",
+      "desc": "左側「產品」欄以樹狀列出所有分類，點箭頭可展開子分類；右側列出此分類及所有子孫分類的產品，每頁 12 筆。"
+    },
+    {
+      "id": "site-product",
+      "group": "site",
+      "icon": "eye",
+      "image": "z-product-show.png",
+      "title": "查看產品詳情",
+      "short": "查看產品詳情",
+      "desc": "產品頁顯示主圖、描述與「產品規格」，下方列出 4 項「相關產品」。點「立即詢價」會前往聯絡我們頁。",
+      "note": "「加入詢價車」按鈕與導覽列的詢價車圖示目前以 @if(false) 隱藏，前台沒有入口可送出詢價單。",
+      "noteType": "wait"
+    },
+    {
+      "id": "site-news",
+      "group": "site",
+      "icon": "report",
+      "image": "z-news.png",
+      "title": "閱讀最新消息",
+      "short": "閱讀最新消息",
+      "desc": "「最新消息」以卡片列出已上架文章，顯示發布日期與分類標籤；點「閱讀更多 →」開啟內文。"
+    },
+    {
+      "id": "site-knowledge",
+      "group": "site",
+      "icon": "folder",
+      "image": "z-knowledge.png",
+      "title": "瀏覽知識庫",
+      "short": "瀏覽知識庫",
+      "desc": "「知識庫」卡片顯示閱讀時間與文章類型（例如 How-To），網址格式為 /knowledge/分類/編號-slug。"
+    },
+    {
+      "id": "site-contact",
+      "group": "site",
+      "icon": "send",
+      "image": "z-contact.png",
+      "title": "送出聯絡表單",
+      "short": "送出聯絡表單",
+      "desc": "填寫姓名、Email、訊息（電話選填），通過驗證碼後按「送出訊息」，頁面顯示「訊息已送出，我們會盡快回覆您！」並寄信到系統設定的聯絡信箱。",
+      "note": "驗證碼服務在後台「系統設定 → 驗證碼設定」切換；SMTP 未設定時寄信失敗會被略過，不會提示使用者。",
+      "noteType": "tip",
+      "mask": {
+        "rect": [
+          810,
+          197,
+          196,
+          22
+        ],
+        "sample": [
+          1150,
+          208
+        ],
+        "text": "（聯絡信箱）",
+        "textColor": "#e11d74"
+      }
+    },
+    {
+      "id": "member-register",
+      "group": "member",
+      "icon": "edit",
+      "image": "z-register.png",
+      "title": "註冊會員",
+      "short": "註冊會員",
+      "desc": "從「登入」頁點「Register」，填帳號（僅限英文、數字與底線）、姓名、Email 與至少 8 碼的密碼，送出後自動登入並進入會員中心。",
+      "note": "/register、/login 不是多語系路由，畫面固定為預設語系，且左上角顯示「Laravel」而非網站 Logo。",
+      "noteType": "wait"
+    },
+    {
+      "id": "member-login",
+      "group": "member",
+      "icon": "lock",
+      "image": "z-login.png",
+      "title": "會員登入",
+      "short": "會員登入",
+      "desc": "以帳號與密碼登入。只有 customer 角色能登入前台，後台帳號會看到「此帳號無法使用前台登入。」"
+    },
+    {
+      "id": "entry-login",
+      "group": "entry",
+      "icon": "lock",
+      "image": "a-login.png",
+      "title": "登入後台",
+      "short": "登入後台",
+      "desc": "開啟 /admin/login，輸入「帳號」與「密碼」後按「登入」。成功後取得 Bearer token 存在瀏覽器，進入「後台總覽」。",
+      "note": "後台以帳號（username）登入，不是 Email；customer 角色的帳號無法使用後台 API。",
+      "noteType": "wait"
+    },
+    {
+      "id": "entry-dashboard",
+      "group": "entry",
+      "icon": "monitor",
+      "image": "a-dashboard.png",
+      "title": "後台總覽",
+      "short": "後台總覽",
+      "desc": "上方卡片顯示輪播圖、產品、最新消息數量與年度用量，「快速操作」可直接跳到「管理產品」「管理新聞」「管理輪播圖」。",
+      "note": "年度用量與預算只對超級管理員顯示；左側選單依登入者的權限過濾。",
+      "noteType": "tip"
+    },
+    {
+      "id": "catalog-list",
+      "group": "catalog",
+      "icon": "list",
+      "image": "a-product.png",
+      "title": "產品列表與批次操作",
+      "short": "產品列表與批次操作",
+      "desc": "可依分類篩選或搜尋產品；勾選多筆後用「批次操作」切換「設為詢價模式」或「設為顯示價格」。詢價模式的產品價格欄顯示「詢價」。"
+    },
+    {
+      "id": "catalog-create",
+      "group": "catalog",
+      "icon": "edit",
+      "image": "d-product-create.png",
+      "title": "新增或編輯產品",
+      "short": "新增或編輯產品",
+      "desc": "點「新增產品」，依語系分頁填寫名稱（繁體中文必填）、Slug、描述與 SEO 欄位，選擇分類後按「儲存」，成功時顯示「儲存成功」。",
+      "note": "Slug 留空時系統會依名稱自動產生；中文名稱會轉成拼音。",
+      "noteType": "tip"
+    },
+    {
+      "id": "catalog-translate",
+      "group": "catalog",
+      "icon": "refresh",
+      "image": "d-product-translate.png",
+      "title": "AI 一鍵翻譯",
+      "short": "AI 一鍵翻譯",
+      "desc": "在產品對話框點「✨ AI 一鍵翻譯」，選來源與目標語系後按「開始翻譯」，名稱、描述、SEO 標題與關鍵字會填入目標語系，完成時顯示「翻譯完成」。",
+      "note": "每次翻譯從專案年度預算扣 NT$3；勾選已有內容的語系會被覆蓋。",
+      "noteType": "wait"
+    },
+    {
+      "id": "catalog-images",
+      "group": "catalog",
+      "icon": "upload",
+      "image": "d-product-edit-images.png",
+      "title": "上傳圖片並設定主圖",
+      "short": "上傳與設定主圖",
+      "desc": "開啟「僅供詢價 (隱藏價格)」會停用價格欄。點或拖曳圖片到上傳區，點縮圖設為「主圖」（綠框），右上角垃圾桶刪除。",
+      "note": "單張不超過 2MB，最多 10 張；伺服器會轉成 1000、500、150 px 三種 JPG 尺寸。",
+      "noteType": "tip"
+    },
+    {
+      "id": "catalog-ai",
+      "group": "catalog",
+      "icon": "cam",
+      "image": "d-product-ai.png",
+      "title": "AI 辨識建立產品",
+      "short": "AI 辨識建立產品",
+      "desc": "點「AI 辨識建立」上傳同一產品的 DM、包裝或不同角度照片（最多 5 張），解析後按「建立產品」，內容與圖片會帶入新增產品對話框。",
+      "note": "需在系統設定開啟 AI 功能才會出現此按鈕；單圖解析扣 NT$10、多圖解析扣 NT$15。",
+      "noteType": "wait"
+    },
+    {
+      "id": "catalog-category",
+      "group": "catalog",
+      "icon": "folder",
+      "image": "a-product-category.png",
+      "title": "產品分類樹",
+      "short": "產品分類樹",
+      "desc": "「產品分類」以樹狀表格顯示「主分類」與「子分類」，可展開收合；「未分類」是系統分類，不能刪除。",
+      "note": "有子分類的分類無法刪除；刪除分類時其下產品會移到「未分類」。",
+      "noteType": "wait"
+    },
+    {
+      "id": "catalog-category-edit",
+      "group": "catalog",
+      "icon": "edit",
+      "image": "d-pcat-edit.png",
+      "title": "設定父級分類",
+      "short": "設定父級分類",
+      "desc": "新增或編輯分類時可選「父級分類」（非必填）、名稱、URL Slug、排序與分類縮圖（600x600px、2MB 內），按「儲存」。",
+      "note": "不能把自己或自己的子孫分類設為父層，否則顯示「無法將子分類設為父分類，這會造成循環關聯」。",
+      "noteType": "wait"
+    },
+    {
+      "id": "content-banner",
+      "group": "content",
+      "icon": "grid",
+      "image": "a-banner.png",
+      "title": "輪播圖列表",
+      "short": "輪播圖列表",
+      "desc": "直接在列表修改「排序」數字或切換「狀態」開關即生效；只有啟用的輪播圖會出現在前台首頁。"
+    },
+    {
+      "id": "content-banner-create",
+      "group": "content",
+      "icon": "upload",
+      "image": "d-banner-create.png",
+      "title": "新增輪播圖",
+      "short": "新增輪播圖",
+      "desc": "點「新增輪播圖」，填「標題 (alt text)」與「連結 URL」，每個語系各上傳「電腦版圖片」（建議 2560 × 900 px）與「手機版圖片」（建議 750 × 500 px）。",
+      "note": "電腦版上限 5MB、手機版 2MB；伺服器會縮成 1920 px 與 800 px 寬的 JPG。",
+      "noteType": "tip"
+    },
+    {
+      "id": "content-news",
+      "group": "content",
+      "icon": "report",
+      "image": "a-news.png",
+      "title": "最新消息列表",
+      "short": "最新消息列表",
+      "desc": "可搜尋標題；「下架」「上架」切換前台是否顯示，狀態欄顯示「已上架」或「已下架」。"
+    },
+    {
+      "id": "content-news-create",
+      "group": "content",
+      "icon": "edit",
+      "image": "d-news-create.png",
+      "title": "新增最新消息",
+      "short": "新增最新消息",
+      "desc": "點「新增最新消息」，填各語系「標題」與「內容」（皆必填，內容為編輯器），選分類與封面圖片 URL，並在下方設定 SEO 與發布狀態。"
+    },
+    {
+      "id": "content-news-category",
+      "group": "content",
+      "icon": "folder",
+      "image": "a-news-category.png",
+      "title": "最新消息分類",
+      "short": "最新消息分類",
+      "desc": "「最新消息分類管理」可新增、編輯分類名稱、URL Slug 與排序；前台消息卡片上的分類標籤來自這裡。"
+    },
+    {
+      "id": "content-knowledge",
+      "group": "content",
+      "icon": "folder",
+      "image": "a-knowledge.png",
+      "title": "知識庫列表",
+      "short": "知識庫列表",
+      "desc": "「知識庫管理」列出文章的分類、類型、閱讀時間與狀態；可搜尋標題或內容，並「下架」或「編輯」。"
+    },
+    {
+      "id": "content-knowledge-create",
+      "group": "content",
+      "icon": "edit",
+      "image": "d-know-create.png",
+      "title": "新增知識庫文章",
+      "short": "新增知識庫文章",
+      "desc": "點「新增文章」，填各語系「文章標題」「文章內容」，選填「摘要 Excerpt」（用於列表卡片與 SEO meta description）與 URL Slug。",
+      "note": "知識庫分類在「知識庫分類」頁管理，欄位包含分類名稱、URL Slug、分類說明與排序。",
+      "noteType": "tip"
+    },
+    {
+      "id": "ai-tools",
+      "group": "ai",
+      "icon": "code",
+      "image": "a-ai-tools.png",
+      "title": "AI 文案助手",
+      "short": "AI 文案助手",
+      "desc": "切換「產品」或「新聞」助手，在「輸入訊息...」輸入需求按「發送」；「搜尋相關產品 (選填)」填關鍵字時，會把找到的產品資料一起交給 AI。",
+      "note": "每則訊息扣 NT$3；預算不足或 AI 功能關閉時無法使用。",
+      "noteType": "wait"
+    },
+    {
+      "id": "ai-usage",
+      "group": "ai",
+      "icon": "chart",
+      "image": "a-usage.png",
+      "title": "用量監控",
+      "short": "用量監控",
+      "desc": "上方卡片顯示年度「已使用」「預算」「剩餘」與「使用率」，達 90% 出現「警告：使用量已接近預算上限！」。下方「使用統計」「使用記錄」依服務與功能列出每次呼叫。",
+      "note": "年度用量每年 1 月 1 日 00:00 由排程自動歸零；「實際成本 (USD)」欄只有超級管理員看得到。",
+      "noteType": "tip"
+    },
+    {
+      "id": "ops-orders",
+      "group": "ops",
+      "icon": "list",
+      "image": "a-orders.png",
+      "title": "詢價訂單列表",
+      "short": "詢價訂單列表",
+      "desc": "可搜尋訂單編號、公司或客戶姓名，並用「全部狀態」「待處理」「處理中」「已結案」「已取消」篩選；點一列進入訂單詳情。",
+      "mask": {
+        "rect": [
+          545,
+          483,
+          142,
+          17
+        ],
+        "sample": [
+          720,
+          492
+        ],
+        "text": "customer@example.com",
+        "font": "12px sans-serif",
+        "textColor": "#9ca3af"
+      }
+    },
+    {
+      "id": "ops-order-detail",
+      "group": "ops",
+      "icon": "check",
+      "image": "d-order-detail.png",
+      "title": "更新訂單狀態",
+      "short": "更新訂單狀態",
+      "desc": "詳情頁顯示「客戶資訊」與「詢價商品」明細。在「更新狀態」選新狀態後按「更新狀態」，成功時顯示「更新成功」。",
+      "mask": [
+        {
+          "rect": [
+            696,
+            360,
+            90,
+            20
+          ],
+          "sample": [
+            950,
+            370
+          ],
+          "text": "09xx-xxx-xxx",
+          "font": "14px sans-serif",
+          "textColor": "#b45309"
+        },
+        {
+          "rect": [
+            304,
+            416,
+            172,
+            20
+          ],
+          "sample": [
+            600,
+            426
+          ],
+          "text": "（客戶地址）",
+          "font": "14px sans-serif",
+          "textColor": "#303133"
+        }
+      ]
+    },
+    {
+      "id": "ops-users",
+      "group": "ops",
+      "icon": "users",
+      "image": "a-users.png",
+      "title": "使用者管理",
+      "short": "使用者管理",
+      "desc": "列出帳號、角色、狀態與最後登入時間；「停用」後該帳號無法登入後台。只有超級管理員能「刪除」使用者。",
+      "note": "預設管理員帳號 admin 不可停用或刪除；管理員看不到超級管理員帳號。",
+      "noteType": "wait"
+    },
+    {
+      "id": "ops-user-create",
+      "group": "ops",
+      "icon": "user",
+      "image": "d-user-create.png",
+      "title": "新增後台使用者",
+      "short": "新增後台使用者",
+      "desc": "點「新增使用者」，填帳號、姓名、Email、密碼（至少 8 碼），角色只能選「管理員」或「編輯者」，按「儲存」。"
+    },
+    {
+      "id": "ops-settings",
+      "group": "ops",
+      "icon": "settings",
+      "image": "a-settings.png",
+      "title": "系統設定：基本與 AI",
+      "short": "基本與 AI 設定",
+      "desc": "設定各語系網站名稱、網域、Logo、「年度預算 (NT$)」、「預設詢價模式」與「啟用 AI 輔助功能」，最後按頁面底部「儲存設定」，顯示「設定已儲存」。"
+    },
+    {
+      "id": "ops-settings-mail",
+      "group": "ops",
+      "icon": "alert",
+      "image": "d-settings-bottom.png",
+      "title": "郵件、驗證碼與維護模式",
+      "short": "郵件驗證碼與維護",
+      "desc": "填 SMTP 主機、連接埠、帳號與應用程式密碼後可按「發送測試信」；選擇驗證碼服務並填 Site Key／Secret Key；開啟「維護模式」後，前台首頁改顯示維護訊息。",
+      "note": "應用程式密碼留空表示不修改原本的值。維護模式目前只擋首頁，其他前台頁面仍可直接開啟。",
+      "noteType": "wait",
+      "mask": [
+        {
+          "rect": [
+            404,
+            145,
+            180,
+            24
+          ],
+          "sample": [
+            760,
+            157
+          ],
+          "text": "smtp-user@example.com",
+          "font": "14px sans-serif",
+          "textColor": "#606266"
+        },
+        {
+          "rect": [
+            634,
+            284,
+            172,
+            18
+          ],
+          "sample": [
+            1000,
+            293
+          ],
+          "text": "已遮蔽）",
+          "font": "12px sans-serif",
+          "textColor": "#909399"
+        },
+        {
+          "rect": [
+            404,
+            502,
+            220,
+            22
+          ],
+          "sample": [
+            1100,
+            513
+          ],
+          "text": "0x4AAAA…（已遮蔽）",
+          "font": "14px sans-serif",
+          "textColor": "#606266"
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "from": "catalog-list",
+      "to": "site-category",
+      "label": "前台呈現"
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+name: Deploy to Linode
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      # -------------------------------------------------------------------------
+      # 1. Checkout
+      # -------------------------------------------------------------------------
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # -------------------------------------------------------------------------
+      # 2. 安裝 PHP（在 Runner 上 build）
+      # -------------------------------------------------------------------------
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, bcmath, mysql, gd, zip, intl, opcache
+          coverage: none
+
+      # -------------------------------------------------------------------------
+      # 3. 安裝 Composer 相依套件（僅正式環境，排除 dev）
+      # -------------------------------------------------------------------------
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      # -------------------------------------------------------------------------
+      # 4. 安裝 Node.js 並 build 前端
+      # -------------------------------------------------------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install npm dependencies & build
+        run: |
+          npm ci
+          npm run build
+
+      # -------------------------------------------------------------------------
+      # 5. 設定 SSH
+      # -------------------------------------------------------------------------
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.LINODE_SSH_KEY }}
+
+      - name: Add server to known_hosts
+        run: |
+          ssh-keyscan -p ${{ secrets.LINODE_PORT }} -H ${{ secrets.LINODE_HOST }} >> ~/.ssh/known_hosts
+
+      # -------------------------------------------------------------------------
+      # 6. 上傳檔案到伺服器（排除不需要的目錄）
+      # -------------------------------------------------------------------------
+      - name: Sync files to server
+        run: |
+          rsync -az --delete \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='tests' \
+            --exclude='.env' \
+            --exclude='storage/app' \
+            --exclude='storage/logs' \
+            --exclude='storage/framework/cache' \
+            --exclude='storage/framework/sessions' \
+            --exclude='storage/framework/views' \
+            --exclude='deploy' \
+            --exclude='*.sh' \
+            -e "ssh -p ${{ secrets.LINODE_PORT }}" \
+            ./ ${{ secrets.LINODE_USER }}@${{ secrets.LINODE_HOST }}:/var/www/minzheco/
+
+      # -------------------------------------------------------------------------
+      # 7. 執行部署後指令
+      # -------------------------------------------------------------------------
+      - name: Run post-deploy commands
+        run: |
+          ssh -p ${{ secrets.LINODE_PORT }} ${{ secrets.LINODE_USER }}@${{ secrets.LINODE_HOST }} << 'EOF'
+            set -e
+            cd /var/www/minzheco
+
+            # 執行 migration
+            php artisan migrate --force
+
+            # 建立 storage symbolic link（首次部署）
+            php artisan storage:link || true
+
+            # 清除並重新建立快取
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            php artisan event:cache
+
+            # 重啟 PHP-FPM
+            sudo systemctl reload php8.4-fpm
+
+            echo "✅ 部署完成"
+          EOF
