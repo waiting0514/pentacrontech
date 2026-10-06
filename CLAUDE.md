@@ -106,5 +106,5 @@ Test database configured in `phpunit.xml`.
 ## Test Accounts
 
 After running `db:seed`:
-- Admin: `admin@example.com` / `admin123`
-- Test: `test@example.com` / `password`
+- Admin: `admin` / `admin123`
+- Test: `test` / `password` (not created when APP_ENV=production)

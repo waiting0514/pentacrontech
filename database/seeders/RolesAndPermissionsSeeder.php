@@ -69,12 +69,18 @@ class RolesAndPermissionsSeeder extends Seeder
         $admin = User::firstOrCreate(
             ['email' => 'admin@example.com'],
             [
+                'username' => 'admin',
                 'name' => 'Super Admin',
                 'password' => Hash::make('password'),
                 'is_active' => true,
             ]
         );
         $admin->assignRole('super-admin');
+
+        // 示範帳號只在非正式環境建立；正式環境的其他使用者由後台新增並指定角色
+        if (app()->isProduction()) {
+            return;
+        }
 
         $managerUser = User::firstOrCreate(
             ['email' => 'manager@example.com'],

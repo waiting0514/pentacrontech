@@ -72,10 +72,10 @@ mysql -e "FLUSH PRIVILEGES;"
 echo ">>> MySQL 安裝完成，資料庫與使用者將由 project-init.sh 建立"
 
 # ------------------------------------------------------------------------------
-# 6. 安裝 Node.js 20 (for npm run build)
+# 6. 安裝 Node.js 22 (for npm run build)
 # ------------------------------------------------------------------------------
-echo "[6/8] 安裝 Node.js 20..."
-curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+echo "[6/8] 安裝 Node.js 22..."
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
 apt install -y nodejs
 
 # ------------------------------------------------------------------------------

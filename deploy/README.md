@@ -1,5 +1,22 @@
 # 部署說明文件
 
+> ## ⚠️ 部署前必改：部署資料夾位置與專案名稱
+>
+> 本文件與部署腳本預設把專案部署在 **`/var/www/minzheco`**，網域為 `minzheco.com`，資料庫為 `minzheco` / `minzheco_user`。
+> 換伺服器路徑、換網域，或把這套流程套到其他專案時，**下列位置必須一起修改，路徑要完全一致**，否則部署會失敗或寫到錯的資料夾：
+>
+> | 檔案 | 要改的地方 |
+> |---|---|
+> | `.github/workflows/deploy.yml` | 最上方 `env.APP_DIR`（workflow 內所有路徑都引用它）；`sudo systemctl reload php8.4-fpm` 的 PHP 版本 |
+> | `deploy/project-init.sh` | `APP_DIR`、`GITHUB_REPO`、`DB_NAME`、`DB_USER`、`DB_PASS`、`GITHUB_ACTIONS_PUBKEY` |
+> | `deploy/nginx.conf` | `server_name`、`root`（= `APP_DIR/public`）、`fastcgi_pass` 的 PHP 版本、log 檔名 |
+> | `deploy/server-init.sh` | `PHP_VERSION`（需與 `deploy.yml`、`nginx.conf` 一致） |
+> | 伺服器上的 `.env` | `APP_URL`、`DB_DATABASE`、`DB_USERNAME`、`DB_PASSWORD` |
+> | 伺服器上的 crontab | `cd /var/www/minzheco` 改成新路徑 |
+> | 本文件 | 下方指令中的 `/var/www/minzheco`、`minzheco.com`、IP `172.237.12.75` 請替換成實際值再執行 |
+>
+> 另外，`/etc/sudoers.d/deployer` 內的 storage 權限設定是由 `project-init.sh` 依 `APP_DIR` 產生的；若專案已初始化後才改路徑，記得同步修改該檔案（見 Step 2 注意事項）。
+
 ## 環境架構
 
 - **伺服器**: Linode JP Tokyo 3（2GB RAM / 50GB Storage）
@@ -7,7 +24,7 @@
 - **Web Server**: Nginx
 - **PHP**: 8.4-FPM
 - **Database**: MySQL 8（直接安裝於主機，不使用 Docker）
-- **CI/CD**: GitHub Actions（push to main 自動觸發）
+- **CI/CD**: GitHub Actions（手動觸發；先跑測試，通過才部署）
 - **Domain**: minzheco.com
 - **SSL**: Let's Encrypt（Certbot）
 
@@ -52,19 +69,21 @@ ssh root@172.237.12.75
 bash /tmp/server-init.sh
 ```
 
-安裝內容：Nginx、PHP 8.4-FPM + 擴充套件、MySQL 8、Node.js 20、Composer、deployer 使用者。
+安裝內容：Nginx、PHP 8.4-FPM + 擴充套件、MySQL 8、Node.js 22、Composer、deployer 使用者。
 
-> ⚠️ **注意**：腳本會自動設定 deployer 的 sudo 權限讓 GitHub Actions 可以 reload PHP-FPM。如果之後有升級 PHP 版本，需要手動更新 sudoers 設定，否則自動部署最後一步會失敗：
-> ```bash
-> echo "deployer ALL=(ALL) NOPASSWD: /bin/systemctl reload php8.4-fpm" > /etc/sudoers.d/deployer
-> chmod 440 /etc/sudoers.d/deployer
+> ⚠️ **注意**：deployer 需要兩組免密碼 sudo 權限，都寫在 `/etc/sudoers.d/deployer`：
+>
+> 1. `server-init.sh` 設定：reload PHP-FPM（部署最後一步）。
+> 2. `project-init.sh` 依 `APP_DIR` 設定：`chown` / `chmod` storage 目錄（部署時 rsync 前的「Fix storage permissions」步驟）。
+>
+> 完成後內容應類似：
+> ```
+> deployer ALL=(ALL) NOPASSWD: /bin/systemctl reload php8.4-fpm
+> deployer ALL=(ALL) NOPASSWD: /usr/bin/chown -R deployer\:www-data /var/www/minzheco/storage
+> deployer ALL=(ALL) NOPASSWD: /usr/bin/chmod -R 775 /var/www/minzheco/storage
 > ```
 >
-> 另外需要補上以下兩行，讓 deployer 可以在部署前修正 storage 目錄權限（否則 rsync 會因為 www-data 建立的快取檔案而失敗）：
-> ```bash
-> echo "deployer ALL=(ALL) NOPASSWD: /bin/chown -R deployer\:www-data /var/www/minzheco/storage" >> /etc/sudoers.d/deployer
-> echo "deployer ALL=(ALL) NOPASSWD: /bin/chmod -R 775 /var/www/minzheco/storage" >> /etc/sudoers.d/deployer
-> ```
+> 之後**升級 PHP 版本**或**更改部署資料夾**時，要用 `sudo visudo -f /etc/sudoers.d/deployer` 修改對應那一行。不要用 `echo ... > /etc/sudoers.d/deployer` 覆寫，會把其他行一起刪掉，導致部署失敗。
 
 ### Step 3｜建立 MySQL 資料庫
 
@@ -127,6 +146,8 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ### Step 7｜Clone 專案並設定 .env
 
+> 💡 Step 3、7、8、9 也可以改用 `deploy/project-init.sh` 一次完成。先修改腳本開頭的 `APP_DIR`、`GITHUB_REPO`、資料庫帳密與公鑰，再以 root 執行 `bash project-init.sh`。
+
 ```bash
 cd /var/www/minzheco
 git clone https://你的TOKEN@github.com/waiting0514/prototype.git .
@@ -141,6 +162,7 @@ APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://minzheco.com
 APP_TIMEZONE=Asia/Taipei
+APP_LOCALE=zh-TW
 
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -163,20 +185,21 @@ CLIPDROP_API_KEY=你的key
 
 ```bash
 composer install --no-dev --optimize-autoloader
-php artisan key:generate
-php artisan migrate
-php artisan db:seed --class=LanguageSeeder
-php artisan db:seed --class=ProjectSeeder
-php artisan db:seed --class=UserSeeder
-php artisan db:seed --class=RolesAndPermissionsSeeder
-php artisan db:seed --class=DefaultCategorySeeder
+php artisan key:generate --force
+php artisan migrate --force
+php artisan db:seed --class=ProductionSeeder --force
 php artisan storage:link
-npm install && npm run build
+npm ci && npm run build
 ```
 
-> ⚠️ **注意**：不要跑 `db:seed`（全部），會帶入 ProductSeeder、NewsSeeder、BannerSeeder 等測試假資料。只跑上方列出的必要 Seeder 即可。
-> 
-> 預設 admin 帳號為 `admin@example.com` / `admin123`，**部署後請立即修改密碼**。
+`ProductionSeeder` 只建立系統必要資料：語言、全站設定（`site_settings`）、admin 帳號、角色權限、預設分類（未分類）。
+
+> ⚠️ **注意**：
+> - 不要跑 `db:seed`（全部）。那會帶入示範產品、新聞、輪播圖等假資料。
+> - 在 `APP_ENV=production` 下，`UserSeeder`、`RolesAndPermissionsSeeder` 不會建立 `test`、`manager` 這兩個示範帳號。
+> - 正式環境的 artisan 指令會要求確認，在腳本裡要加 `--force`。
+>
+> 預設 admin 帳號為 **`admin` / `admin123`**（登入時輸入帳號，不是 email），**部署後請立即修改密碼**。
 
 ### Step 9｜設定目錄權限
 
@@ -187,13 +210,18 @@ chmod -R 775 /var/www/minzheco/storage
 chmod -R 775 /var/www/minzheco/bootstrap/cache
 chown -R deployer:www-data /var/www/minzheco/storage/framework/cache
 chmod -R 775 /var/www/minzheco/storage/framework/cache
+
+# 讓 GitHub Actions 部署前能自動修正 storage 權限（使用 project-init.sh 時已自動完成）
+sudo visudo -f /etc/sudoers.d/deployer
+# 加入以下兩行（路徑須與 deploy.yml 的 APP_DIR 一致）：
+# deployer ALL=(ALL) NOPASSWD: /usr/bin/chown -R deployer\:www-data /var/www/minzheco/storage
+# deployer ALL=(ALL) NOPASSWD: /usr/bin/chmod -R 775 /var/www/minzheco/storage
 ```
 
-> ⚠️ **注意**：之後若 GitHub Actions rsync 出現 `storage/framework/cache` 相關的 `Permission denied`，是因為 `www-data` 建立的快取檔案不允許 `deployer` 刪除，重新執行以下指令即可修正：
-> ```bash
-> chown -R deployer:www-data /var/www/minzheco/storage
-> chmod -R 775 /var/www/minzheco/storage
-> ```
+> ⚠️ **注意**：
+> - `www-data` 建立的快取檔案，`deployer` 不能刪除，會讓 rsync 出現 `Permission denied`。
+> - workflow 的「Fix storage permissions」步驟會在每次 rsync 前自動修正這個問題。
+> - 如果這個步驟出現 `sudo: a password is required`,代表上面兩行 sudoers 沒設好,或路徑與 `APP_DIR` 不一致。
 
 ### Step 10｜設定 HTTPS
 
@@ -220,16 +248,25 @@ crontab -u deployer -e
 
 ## 日常部署
 
-push 到 `main` branch 後，GitHub Actions 自動執行：
+到 GitHub repo → Actions → **Deploy to Linode** → **Run workflow** 手動觸發，執行內容：
 
-1. 安裝 Composer 套件（無 dev）
-2. Build 前端（`npm run build`）
-3. rsync 同步到伺服器
-4. 執行 `php artisan migrate --force`
-5. 重建 config / route / view / event cache
-6. reload PHP-FPM
+1. **測試 job**：用 MySQL service 跑 `php artisan test`。失敗就不會部署。
+2. **部署 job**（測試通過後）：
+   1. 安裝 Composer 套件（無 dev）
+   2. Build 前端（`npm run build`）
+   3. 修正伺服器 storage 權限
+   4. rsync 同步到伺服器
+   5. 執行 `php artisan migrate --force`
+   6. 重建 config / route / view / event cache
+   7. reload PHP-FPM
 
-也可在 GitHub Actions 頁面手動觸發（Run workflow 按鈕）。
+> 想改成 push 到 `main` 自動部署，在 `deploy.yml` 的 `on:` 加上：
+> ```yaml
+> on:
+>   workflow_dispatch:
+>   push:
+>     branches: [main]
+> ```
 
 ---
 
@@ -243,15 +280,30 @@ Workflow 名稱由檔案內的 `name` 欄位決定，目前設定為 `Deploy to 
 
 **Workflow 執行步驟說明**：
 
+共兩個 job，`deploy` 設定 `needs: test`，測試通過才會執行；並以 `concurrency` 確保同一時間只有一個部署在跑。
+
+`test` job：
+
+| 步驟 | 說明 |
+|---|---|
+| MySQL service | 啟動 MySQL 8.4，建立 `testing` 資料庫 |
+| Setup PHP / Install Composer dependencies | 安裝 PHP 8.4 與套件（含 dev） |
+| Setup Node.js / Build frontend | Node.js 22，build 前端（前台頁面測試需要 Vite manifest） |
+| Prepare environment | 複製 `.env.example` 並產生 APP_KEY |
+| Run tests | `php artisan test` |
+
+`deploy` job：
+
 | 步驟 | 說明 |
 |---|---|
 | Checkout code | 取得最新程式碼 |
 | Setup PHP | 在 Runner 安裝 PHP 8.4 |
 | Install Composer dependencies | 安裝套件（排除 dev，正式環境用） |
-| Setup Node.js | 在 Runner 安裝 Node.js 20 |
+| Setup Node.js | 在 Runner 安裝 Node.js 22 |
 | Install npm dependencies & build | 安裝前端套件並 build |
 | Setup SSH agent | 載入 GitHub Secret 的私鑰 |
 | Add server to known_hosts | 將伺服器加入信任清單 |
+| Fix storage permissions | 以 sudo 修正 `storage` 擁有者與權限，避免 rsync 失敗 |
 | Sync files to server | rsync 同步檔案到伺服器（排除 .env、storage、快取等） |
 | Run post-deploy commands | 執行 migrate、cache、reload PHP-FPM |
 
@@ -263,6 +315,7 @@ Workflow 名稱由檔案內的 `name` 欄位決定，目前設定為 `Deploy to 
 | `node_modules` | 已在 Runner build，不需同步 |
 | `tests` | 測試檔案不需上線 |
 | `.env` | 正式環境 .env 放在伺服器，不能被覆蓋 |
+| `public/storage` | `storage:link` 建立的連結，不在 git 裡；不排除的話 `--delete` 會刪掉它，造成圖片暫時 404 |
 | `storage/app` | 使用者上傳的圖片、檔案 |
 | `storage/logs` | 伺服器 log |
 | `storage/framework/cache` | Laravel 快取，runtime 自動產生 |
@@ -272,9 +325,9 @@ Workflow 名稱由檔案內的 `name` 欄位決定，目前設定為 `Deploy to 
 
 **套用到其他專案時需修改的地方**：
 
-- `deploy.yml` 中所有 `/var/www/minzheco` 改成新專案路徑
+- 部署資料夾、網域、資料庫名稱：見本文件最上方「⚠️ 部署前必改」的完整清單
 - GitHub Secrets 名稱建議加上專案名稱區分（如 `LINODE_PROJECTNAME_SSH_KEY`）
-- PHP 版本視專案需求調整
+- PHP 版本視專案需求調整（`deploy.yml`、`server-init.sh`、`nginx.conf`、sudoers 要一致）
 
 ---
 
@@ -360,11 +413,7 @@ chown -R deployer:www-data storage/framework/cache
 chmod -R 775 storage/framework/cache
 
 # 補跑必要的 Seeder
-php artisan db:seed --class=LanguageSeeder
-php artisan db:seed --class=ProjectSeeder
-php artisan db:seed --class=UserSeeder
-php artisan db:seed --class=RolesAndPermissionsSeeder
-php artisan db:seed --class=DefaultCategorySeeder
+php artisan db:seed --class=ProductionSeeder --force
 
 # 清除並重建快取
 php artisan cache:clear
@@ -411,6 +460,7 @@ crontab -u deployer -e
 ```
 deploy/
 ├── server-init.sh   # 伺服器初始化腳本（只需執行一次）
+├── project-init.sh  # 專案初始化腳本（建 DB、clone、seed、權限、sudoers）
 ├── nginx.conf       # Nginx 設定範本
 └── README.md        # 本說明文件
 

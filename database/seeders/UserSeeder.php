@@ -13,16 +13,6 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create test user
-        User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'username' => 'test',
-                'name' => 'Test User',
-                'password' => Hash::make('password'),
-            ]
-        );
-
         // Create admin user
         User::firstOrCreate(
             ['email' => 'admin@example.com'],
@@ -32,9 +22,21 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('admin123'),
             ]
         );
-
-        $this->command->info('Test users created successfully!');
-        $this->command->info('Test User: test / password');
         $this->command->info('Admin: admin / admin123');
+
+        // 測試帳號只在非正式環境建立
+        if (app()->isProduction()) {
+            return;
+        }
+
+        User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'username' => 'test',
+                'name' => 'Test User',
+                'password' => Hash::make('password'),
+            ]
+        );
+        $this->command->info('Test User: test / password');
     }
 }

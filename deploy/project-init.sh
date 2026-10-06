@@ -8,6 +8,7 @@
 
 set -e
 
+# ⚠️ 部署資料夾：需與 .github/workflows/deploy.yml 的 APP_DIR、deploy/nginx.conf 的 root 一致
 APP_DIR="/var/www/minzheco"
 GITHUB_REPO="https://你的TOKEN@github.com/waiting0514/prototype.git"
 DB_NAME="minzheco"
@@ -83,7 +84,7 @@ echo "[5/8] 安裝 Composer 套件..."
 composer install --no-dev --optimize-autoloader
 
 echo "產生 APP_KEY..."
-php artisan key:generate
+php artisan key:generate --force
 
 # ------------------------------------------------------------------------------
 # 4. 執行 Migration 與必要 Seeder
@@ -91,18 +92,14 @@ php artisan key:generate
 echo "[6/8] 執行 Migration..."
 php artisan migrate --force
 
-echo "執行必要 Seeder..."
-php artisan db:seed --class=LanguageSeeder
-php artisan db:seed --class=ProjectSeeder
-php artisan db:seed --class=UserSeeder
-php artisan db:seed --class=RolesAndPermissionsSeeder
-php artisan db:seed --class=DefaultCategorySeeder
+echo "執行必要 Seeder（不含示範資料）..."
+php artisan db:seed --class=ProductionSeeder --force
 
 # ------------------------------------------------------------------------------
 # 5. Build 前端
 # ------------------------------------------------------------------------------
 echo "[7/8] Build 前端..."
-npm install && npm run build
+npm ci && npm run build
 
 # ------------------------------------------------------------------------------
 # 6. 設定目錄權限
@@ -116,6 +113,16 @@ chmod -R 775 $APP_DIR/bootstrap/cache
 chown -R deployer:www-data $APP_DIR/storage/framework/cache
 chmod -R 775 $APP_DIR/storage/framework/cache
 
+# 讓 GitHub Actions 部署前可以修正 storage 權限（deploy.yml 的 Fix storage permissions 步驟）
+if ! grep -q "$APP_DIR/storage" /etc/sudoers.d/deployer; then
+cat >> /etc/sudoers.d/deployer << EOF
+deployer ALL=(ALL) NOPASSWD: /usr/bin/chown -R deployer\:www-data $APP_DIR/storage
+deployer ALL=(ALL) NOPASSWD: /usr/bin/chmod -R 775 $APP_DIR/storage
+EOF
+fi
+chmod 440 /etc/sudoers.d/deployer
+visudo -cf /etc/sudoers.d/deployer
+
 # ------------------------------------------------------------------------------
 # 完成
 # ------------------------------------------------------------------------------
@@ -124,7 +131,7 @@ echo "=============================="
 echo " 專案初始化完成！"
 echo "=============================="
 echo ""
-echo "預設 admin 帳號: admin@example.com / admin123"
+echo "預設 admin 帳號: admin / admin123（以帳號登入，不是 email）"
 echo "⚠️  請立即登入後台修改密碼！"
 echo ""
 echo "接下來請執行："
