@@ -15,6 +15,7 @@
 
 1. [環境需求](#1-環境需求)
 2. [從零開始建置（Windows）](#2-從零開始建置windows)
+   - [2B. 從零開始建置（WSL2）](#2b-從零開始建置wsl2)
 3. [日常開發](#3-日常開發)
 4. [執行測試](#4-執行測試)
 5. [設定說明（.env）](#5-設定說明env)
@@ -26,7 +27,10 @@
 
 ## 1. 環境需求
 
-以下以 **Windows 10/11** 為例。
+以下以 **Windows 10/11** 為例。有兩種操作方式，擇一即可：
+
+- **Windows 原生**：在 PowerShell / Git Bash 操作，見[第 2 節](#2-從零開始建置windows)。
+- **WSL2（建議）**：在 Ubuntu 等 Linux 終端機操作，檔案效能較好、指令與 Linux/macOS 相同，見 [2B 節](#2b-從零開始建置wsl2)。
 
 | 軟體 | 用途 | 說明 |
 |---|---|---|
@@ -219,6 +223,163 @@ CLIPDROP_API_KEY=...
 ```
 
 改完 `.env` 後執行 `docker compose exec laravel.test php artisan config:clear`。AI 年度預算（TWD）與開關在後台「設定」頁調整；各功能的固定單價在 `config/ai_pricing.php`。
+
+---
+
+## 2B. 從零開始建置（WSL2）
+
+WSL2 讓你在 Windows 上直接使用 Linux 環境。因為 Docker 容器本來就跑在 Linux 上，專案放在 WSL 的檔案系統內，檔案讀寫與 Vite 熱更新都比放在 Windows 磁碟快很多，也不會遇到路徑與換行字元的問題。
+
+### 與 Windows 原生方式的差異
+
+| 項目 | Windows 原生 | WSL2 |
+|---|---|---|
+| 執行指令 | PowerShell 不能直接執行 `./vendor/bin/sail`，要用 `docker compose exec laravel.test …` | 可直接用 `./vendor/bin/sail …` |
+| 步驟 3（裝依賴）的路徑掛載 | PowerShell 用 `${PWD}`；Git Bash 要用 `pwd -W` 與 `MSYS_NO_PATHCONV` | 直接用 `$(pwd)` |
+| `WWWUSER` / `WWWGROUP` | 固定填 `1000` | 填自己的 uid / gid（`id -u`、`id -g`），通常也是 `1000` |
+| 專案放哪裡 | 任意 Windows 資料夾 | **必須放在 WSL 家目錄**（如 `~/pentacrontech`），不要放 `/mnt/d/...` |
+| 換行字元問題 | 可能出現 `^M: bad interpreter` | 基本不會發生 |
+| Git 設定與認證 | 使用 Windows 的設定 | 要在 WSL 內重新設定一次 |
+
+### 前置設定（只需做一次）
+
+1. **啟用 WSL2 並安裝 Ubuntu**：以系統管理員開啟 PowerShell，執行
+
+   ```powershell
+   wsl --install -d Ubuntu
+   ```
+
+   安裝完成後重新開機，依指示建立 Linux 使用者名稱與密碼。確認版本為 2：
+
+   ```powershell
+   wsl -l -v
+   ```
+
+   `VERSION` 欄位應為 `2`。若是 `1`，執行 `wsl --set-version Ubuntu 2`。
+
+2. **Docker Desktop 開啟 WSL 整合**：Docker Desktop → Settings → Resources → **WSL Integration**，開啟 *Enable integration with my default WSL distro*，並勾選 `Ubuntu`，按 *Apply & restart*。
+
+3. **在 Ubuntu 終端機確認 Docker 可用**（從開始選單開啟 *Ubuntu*，或在 PowerShell 輸入 `wsl`）：
+
+   ```bash
+   docker --version
+   docker compose version
+   git --version
+   ```
+
+   若 `docker` 找不到指令，代表步驟 2 的整合沒有生效。
+
+4. **設定 Git**（在 WSL 內）：
+
+   ```bash
+   git config --global user.name "你的名字"
+   git config --global user.email "you@example.com"
+   git config --global core.autocrlf input
+   ```
+
+   存取私有儲存庫請在 WSL 內建立 SSH key（`ssh-keygen -t ed25519`）並加到 GitHub，或使用 `gh auth login`。
+
+### 建置步驟
+
+以下全部在 **Ubuntu 終端機**執行。
+
+```bash
+# 1. 取得原始碼（放在家目錄，不要放 /mnt/...）
+cd ~
+git clone <專案網址> pentacrontech
+cd pentacrontech
+
+# 2. 建立 .env
+cp .env.example .env
+```
+
+用編輯器修改 `.env`（可用 `nano .env`，或 `code .` 以 VS Code 開啟），設定與[步驟 4](#步驟-4修改-env)相同，只有最後兩行不同：
+
+```ini
+APP_LOCALE=zh-TW
+
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=sail
+DB_PASSWORD=password
+
+REDIS_HOST=redis
+
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+
+# 填 id -u / id -g 的結果，通常是 1000
+WWWUSER=1000
+WWWGROUP=1000
+```
+
+```bash
+# 3. 用 Docker 安裝 PHP 依賴（建立 vendor/）
+docker run --rm -v "$(pwd):/app" -w /app laravelsail/php84-composer:latest \
+  composer install --ignore-platform-reqs --no-interaction
+
+# 4. 啟動容器（第一次會建置映像檔，需數分鐘）
+./vendor/bin/sail up -d
+
+# 5. 產生金鑰、建立資料表與初始資料、建立儲存連結
+./vendor/bin/sail artisan key:generate
+./vendor/bin/sail artisan migrate:fresh --seed
+./vendor/bin/sail artisan storage:link
+
+# 6. 安裝並建置前端
+./vendor/bin/sail npm install
+./vendor/bin/sail npm run build
+```
+
+> 第 3 步在 Linux 下以 root 執行容器，`vendor/` 可能屬於 root，之後無法編輯。若遇到權限問題，執行 `sudo chown -R $USER:$USER .`。
+
+完成後，在 **Windows 的瀏覽器**直接開啟 <http://localhost>（前台）、<http://localhost/admin>（後台，帳號 `admin` / 密碼 `admin123`）、<http://localhost:8025>（Mailpit）。WSL2 會自動把連接埠轉發到 Windows。
+
+### 可選：縮短 sail 指令
+
+在 `~/.bashrc` 加上別名後，就能直接輸入 `sail`：
+
+```bash
+echo "alias sail='sh \$([ -f sail ] && echo sail || echo vendor/bin/sail)'" >> ~/.bashrc
+source ~/.bashrc
+```
+
+### 日常使用對照
+
+本文件第 3～6 節的指令是寫成 `docker compose exec laravel.test <指令>`，在 WSL2 同樣可用；也可以改寫成 `sail`：
+
+| 文件中的寫法 | WSL2 簡寫 |
+|---|---|
+| `docker compose exec laravel.test php artisan test` | `sail artisan test` |
+| `docker compose exec laravel.test npm run dev` | `sail npm run dev` |
+| `docker compose exec laravel.test composer require 套件` | `sail composer require 套件` |
+| `docker compose exec laravel.test php artisan migrate:fresh --seed` | `sail artisan migrate:fresh --seed` |
+| `docker compose exec laravel.test bash` | `sail shell` |
+
+### 使用 VS Code 開發
+
+1. 在 Windows 安裝 VS Code 與 **WSL** 擴充（`ms-vscode-remote.remote-wsl`）。
+2. 在 WSL 專案目錄執行 `code .`，VS Code 會以 WSL 模式開啟，檔案路徑是 Linux 路徑，終端機也是 WSL 的 bash。
+3. 不要從 Windows 檔案總管用 `\\wsl$\…` 路徑開啟專案後再用 Windows 版的工具編輯與執行指令，容易造成權限與換行問題。
+
+### WSL2 常見問題
+
+- **`docker: command not found`**：Docker Desktop 的 WSL Integration 沒有開，見前置設定第 2 步。
+- **`Cannot connect to the Docker daemon`**：Docker Desktop 沒有啟動。
+- **`localhost` 打不開**：先確認 `docker compose ps` 都是 `Up`；若仍不行，在 PowerShell 執行 `wsl --shutdown` 後重新啟動 Docker Desktop。
+- **Vite 熱更新沒有反應**：確認專案在 WSL 家目錄而非 `/mnt/...`。
+- **WSL 佔用太多記憶體**：在 `C:\Users\<你>\.wslconfig` 設定上限，例如
+
+  ```ini
+  [wsl2]
+  memory=6GB
+  processors=4
+  ```
+
+  存檔後執行 `wsl --shutdown` 重啟。
+- **其他錯誤**（MySQL 帳密錯誤、連接埠被佔用、`Vite manifest not found` 等）解法與 Windows 原生相同，見[第 8 節](#8-常見問題排除)，只要把 `docker compose exec laravel.test` 換成 `sail`。
 
 ---
 
