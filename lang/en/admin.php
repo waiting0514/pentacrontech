@@ -178,8 +178,6 @@ return [
         'title' => 'System Settings',
         'basic' => 'Basic Settings',
         'site_name' => 'Site Name',
-        'domain' => 'Domain',
-        'domain_hint' => 'Used for generating Sitemap and canonical URLs',
         'yearly_budget' => 'Yearly Budget (NT$)',
         'budget_hint' => 'Yearly AI service usage budget (TWD). Service will pause when limit is reached.',
         'product_settings' => 'Product Settings',

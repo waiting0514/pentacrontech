@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('knowledge_articles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('category_id')->nullable()->constrained('knowledge_categories')->nullOnDelete();
             $table->json('title');
             $table->json('slug');
@@ -26,7 +25,7 @@ return new class extends Migration
             $table->timestamp('published_at')->nullable();
             $table->timestamps();
 
-            $table->index(['project_id', 'category_id', 'is_published']);
+            $table->index(['category_id', 'is_published']);
             $table->index('published_at');
         });
     }

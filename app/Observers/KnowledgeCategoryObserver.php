@@ -42,7 +42,6 @@ class KnowledgeCategoryObserver
         $category->slug = $this->slugService->generateSlug(
             $name,
             'knowledge_categories',
-            $category->project_id,
             $category->id
         );
     }
@@ -62,8 +61,7 @@ class KnowledgeCategoryObserver
 
     protected function slugExists(string $slug, KnowledgeCategory $category): bool
     {
-        $query = KnowledgeCategory::where('slug', $slug)
-            ->where('project_id', $category->project_id);
+        $query = KnowledgeCategory::where('slug', $slug);
 
         if ($category->id) {
             $query->where('id', '!=', $category->id);

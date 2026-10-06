@@ -25,13 +25,13 @@ class AiTextService
      */
     public function chat(User $user, string $context, string $userMessage, ?string $ragQuery = null): string
     {
-        // Get current project
-        $project = $this->costControl->getCurrentProject();
+        // Get site settings
+        $setting = $this->costControl->getSiteSetting();
 
         $featurePrice = $this->costControl->getFeaturePrice('chat');
 
-        if (!$this->costControl->checkBudget($project, $featurePrice)) {
-            throw new \Exception('Project budget exceeded');
+        if (!$this->costControl->checkBudget($setting, $featurePrice)) {
+            throw new \Exception('AI budget exceeded');
         }
 
         // Get system prompt based on context
@@ -59,7 +59,7 @@ class AiTextService
             // Calculate and record cost
             $cost = $this->costControl->calculateOpenAICost('gpt-4o-mini', $inputTokens, $outputTokens);
             
-            $this->costControl->recordUsage($user, $project, [
+            $this->costControl->recordUsage($user, $setting, [
                 'provider' => 'openai',
                 'feature' => 'chat',
                 'input_tokens' => $inputTokens,
@@ -69,12 +69,12 @@ class AiTextService
                 'status' => 'success',
             ]);
 
-            $this->costControl->incrementUsage($project, $featurePrice);
+            $this->costControl->incrementUsage($setting, $featurePrice);
 
             return $content;
 
         } catch (\Exception $e) {
-            $this->costControl->recordUsage($user, $project, [
+            $this->costControl->recordUsage($user, $setting, [
                 'provider' => 'openai',
                 'feature' => 'chat',
                 'input_tokens' => 0,
@@ -98,11 +98,11 @@ class AiTextService
      */
     public function translateBatch(User $user, array $payload, array $targetLangs): array
     {
-        $project = $this->costControl->getCurrentProject();
+        $setting = $this->costControl->getSiteSetting();
         $featurePrice = $this->costControl->getFeaturePrice('translation');
 
-        if (!$this->costControl->checkBudget($project, $featurePrice)) {
-            throw new \Exception('Project budget exceeded');
+        if (!$this->costControl->checkBudget($setting, $featurePrice)) {
+            throw new \Exception('AI budget exceeded');
         }
 
         $langNames = [
@@ -138,7 +138,7 @@ class AiTextService
 
             $cost = $this->costControl->calculateOpenAICost('gpt-4o-mini', $inputTokens, $outputTokens);
             
-            $this->costControl->recordUsage($user, $project, [
+            $this->costControl->recordUsage($user, $setting, [
                 'provider' => 'openai',
                 'feature' => 'translation',
                 'input_tokens' => $inputTokens,
@@ -148,12 +148,12 @@ class AiTextService
                 'status' => 'success',
             ]);
 
-            $this->costControl->incrementUsage($project, $featurePrice);
+            $this->costControl->incrementUsage($setting, $featurePrice);
 
             return json_decode($content, true);
 
         } catch (\Exception $e) {
-            $this->costControl->recordUsage($user, $project, [
+            $this->costControl->recordUsage($user, $setting, [
                 'provider' => 'openai',
                 'feature' => 'translation',
                 'input_tokens' => 0,
@@ -177,13 +177,13 @@ class AiTextService
      */
     public function translate(User $user, string $text, array $targetLangs): array
     {
-        // Get current project
-        $project = $this->costControl->getCurrentProject();
+        // Get site settings
+        $setting = $this->costControl->getSiteSetting();
 
         $featurePrice = $this->costControl->getFeaturePrice('translation');
 
-        if (!$this->costControl->checkBudget($project, $featurePrice)) {
-            throw new \Exception('Project budget exceeded');
+        if (!$this->costControl->checkBudget($setting, $featurePrice)) {
+            throw new \Exception('AI budget exceeded');
         }
 
         $langNames = [
@@ -218,7 +218,7 @@ class AiTextService
 
             $cost = $this->costControl->calculateOpenAICost('gpt-4o-mini', $inputTokens, $outputTokens);
 
-            $this->costControl->recordUsage($user, $project, [
+            $this->costControl->recordUsage($user, $setting, [
                 'provider' => 'openai',
                 'feature' => 'translation',
                 'input_tokens' => $inputTokens,
@@ -228,12 +228,12 @@ class AiTextService
                 'status' => 'success',
             ]);
 
-            $this->costControl->incrementUsage($project, $featurePrice);
+            $this->costControl->incrementUsage($setting, $featurePrice);
 
             return json_decode($content, true);
 
         } catch (\Exception $e) {
-            $this->costControl->recordUsage($user, $project, [
+            $this->costControl->recordUsage($user, $setting, [
                 'provider' => 'openai',
                 'feature' => 'translation',
                 'input_tokens' => 0,

@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Models\Project;
+use App\Models\SiteSetting;
 use App\Models\AiUsageLog;
 use Illuminate\Support\Facades\Log;
 
@@ -21,22 +21,21 @@ class AiCostControlService
     }
 
     /**
-     * Check if project has exceeded yearly budget.
+     * Check if site has exceeded yearly budget.
      *
-     * @param Project $project
+     * @param SiteSetting $setting
      * @param float $estimatedCostTwd Estimated cost in TWD (fixed price)
      * @return bool True if within budget, false if exceeded
      */
-    public function checkBudget(Project $project, float $estimatedCostTwd = 0): bool
+    public function checkBudget(SiteSetting $setting, float $estimatedCostTwd = 0): bool
     {
-        $usage = (float) $project->yearly_usage_twd;
-        $budget = (float) $project->yearly_budget_twd;
+        $usage = (float) $setting->yearly_usage_twd;
+        $budget = (float) $setting->yearly_budget_twd;
         $remaining = $budget - $usage;
 
         if ($remaining < $estimatedCostTwd) {
-            Log::warning('Project budget insufficient', [
-                'project_id' => $project->id,
-                'project_name' => $project->name,
+            Log::warning('SiteSetting budget insufficient', [
+                'site_name' => $setting->name,
                 'usage_twd' => $usage,
                 'budget_twd' => $budget,
                 'remaining_twd' => $remaining,
@@ -53,17 +52,16 @@ class AiCostControlService
      * Record AI usage to the database.
      *
      * @param User $user
-     * @param Project $project
+     * @param SiteSetting $setting
      * @param array $logData
      * @return AiUsageLog
      */
-    public function recordUsage(User $user, Project $project, array $logData): AiUsageLog
+    public function recordUsage(User $user, SiteSetting $setting, array $logData): AiUsageLog
     {
         $status = $logData['status'] ?? (($logData['is_successful'] ?? true) ? 'success' : 'failed');
 
         return AiUsageLog::create([
             'user_id' => $user->id,
-            'project_id' => $project->id,
             'provider' => $logData['provider'] ?? $logData['service'] ?? 'openai',
             'feature' => $logData['feature'] ?? null,
             'input_tokens' => $logData['input_tokens'] ?? null,
@@ -75,15 +73,15 @@ class AiCostControlService
     }
 
     /**
-     * Increment project's yearly usage in TWD.
+     * Increment site's yearly usage in TWD.
      *
-     * @param Project $project
+     * @param SiteSetting $setting
      * @param float $costTwd Fixed price in TWD
      * @return void
      */
-    public function incrementUsage(Project $project, float $costTwd): void
+    public function incrementUsage(SiteSetting $setting, float $costTwd): void
     {
-        $project->increment('yearly_usage_twd', $costTwd);
+        $setting->increment('yearly_usage_twd', $costTwd);
     }
 
     /**
@@ -120,12 +118,12 @@ class AiCostControlService
     }
 
     /**
-     * Get current project (API 使用 token 驗證，沒有 session，一律取第一個專案)。
+     * Get the site settings (single-tenant).
      *
-     * @return Project
+     * @return SiteSetting
      */
-    public function getCurrentProject(): Project
+    public function getSiteSetting(): SiteSetting
     {
-        return Project::firstOrFail();
+        return SiteSetting::current();
     }
 }

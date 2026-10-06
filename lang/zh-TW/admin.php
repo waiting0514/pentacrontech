@@ -178,8 +178,6 @@ return [
         'title' => '系統設定',
         'basic' => '基本設定',
         'site_name' => '網站名稱',
-        'domain' => '網域',
-        'domain_hint' => '用於生成 Sitemap 和 canonical URL',
         'yearly_budget' => '年度預算 (NT$)',
         'budget_hint' => '每年 AI 服務使用預算（新台幣）。達到上限後將暫停服務。',
         'product_settings' => '產品設定',

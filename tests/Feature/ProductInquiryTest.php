@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Product;
 use App\Models\User;
-use App\Models\Project;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -79,24 +79,17 @@ class ProductInquiryTest extends TestCase
         $this->assertTrue($p2->fresh()->is_inquiry_only);
     }
 
-    public function test_can_update_project_default_inquiry_mode()
+    public function test_can_update_site_default_inquiry_mode()
     {
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole('super-admin');
         
-        $project = Project::first();
-        if (!$project) {
-            $project = Project::create([
-                'name' => 'Test Project',
-                'monthly_budget_usd' => 100,
-            ]);
-        }
-
-        $response = $this->actingAs($user, 'sanctum')->putJson('/api/projects/' . $project->id, [
+        $setting = SiteSetting::current();
+        $response = $this->actingAs($user, 'sanctum')->putJson('/api/settings', [
             'product_default_inquiry_mode' => true,
         ]);
 
         $response->assertStatus(200);
-        $this->assertTrue($project->fresh()->product_default_inquiry_mode);
+        $this->assertTrue($setting->fresh()->product_default_inquiry_mode);
     }
 }

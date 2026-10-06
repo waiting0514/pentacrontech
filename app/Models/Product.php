@@ -15,7 +15,6 @@ class Product extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'project_id',
         'category_id',
         'name',
         'slug',
@@ -36,14 +35,6 @@ class Product extends Model
         'meta_description',
         'meta_keywords',
     ];
-
-    /**
-     * Get the project that owns the product.
-     */
-    public function project()
-    {
-        return $this->belongsTo(Project::class);
-    }
 
     public function category()
     {

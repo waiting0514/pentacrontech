@@ -62,13 +62,12 @@ class ProductCategoryObserver
         $category->slug = $this->slugService->generateSlug(
             $name,
             'product_categories',
-            $category->project_id,
             $category->id
         );
     }
 
     /**
-     * Ensure slug is unique within the project.
+     * Ensure slug is unique within the table.
      */
     protected function ensureUniqueSlug(string $slug, ProductCategory $category): string
     {
@@ -90,8 +89,7 @@ class ProductCategoryObserver
                   ->orWhere('slug->zh-TW', $slug)
                   ->orWhere('slug->en', $slug)
                   ->orWhere('slug->zh', $slug);
-            })
-            ->where('project_id', $category->project_id);
+            });
 
         if ($category->id) {
             $query->where('id', '!=', $category->id);

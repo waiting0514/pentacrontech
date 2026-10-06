@@ -1,14 +1,14 @@
 <script setup>
 import { ref, computed, onMounted, getCurrentInstance } from 'vue';
 import { Close } from '@element-plus/icons-vue';
-import { projectService, uploadService } from '../../../services';
+import { settingsService, uploadService } from '../../../services';
 import { ElMessage } from 'element-plus';
 import TranslatableInput from '../../components/TranslatableInput.vue';
-import { useProjectStore } from '../../store/modules/project';
+import { useSiteStore } from '../../store/modules/site';
 import { useLanguageStore } from '../../store/modules/language';
 
 const { proxy } = getCurrentInstance();
-const projectStore = useProjectStore();
+const siteStore = useSiteStore();
 const languageStore = useLanguageStore();
 const languages = computed(() => languageStore.languages);
 
@@ -16,7 +16,7 @@ const isLoading = ref(false);
 const logoUploading = ref(false);
 
 const settings = ref({
-    name: {}, domain: '', yearly_budget_twd: 1000,
+    name: {}, yearly_budget_twd: 1000,
     logo_url: '',
     product_default_inquiry_mode: false,
     is_ai_enabled: true,
@@ -54,41 +54,40 @@ const ensureObject = (val) => {
 const fetchSettings = async () => {
     isLoading.value = true;
     try {
-        const response = await projectService.current();
-        const project = response.data.data;
+        const response = await settingsService.get();
+        const data = response.data.data;
         settings.value = {
-            name: ensureObject(project.name),
-            domain: project.domain || '',
-            logo_url: project.logo_url || '',
-            yearly_budget_twd: parseFloat(project.yearly_budget_twd) || 1000,
-            product_default_inquiry_mode: Boolean(project.product_default_inquiry_mode),
-            is_ai_enabled: project.is_ai_enabled !== undefined ? Boolean(project.is_ai_enabled) : true,
-            meta_title: ensureObject(project.meta_title),
-            meta_description: ensureObject(project.meta_description),
-            meta_keywords: ensureObject(project.meta_keywords),
-            contact_phone: project.contact_phone || '',
-            contact_email: project.contact_email || '',
-            contact_address: ensureObject(project.contact_address),
-            maintenance_mode: project.maintenance_mode || false,
-            maintenance_message: ensureObject(project.maintenance_message),
+            name: ensureObject(data.name),
+            logo_url: data.logo_url || '',
+            yearly_budget_twd: parseFloat(data.yearly_budget_twd) || 1000,
+            product_default_inquiry_mode: Boolean(data.product_default_inquiry_mode),
+            is_ai_enabled: data.is_ai_enabled !== undefined ? Boolean(data.is_ai_enabled) : true,
+            meta_title: ensureObject(data.meta_title),
+            meta_description: ensureObject(data.meta_description),
+            meta_keywords: ensureObject(data.meta_keywords),
+            contact_phone: data.contact_phone || '',
+            contact_email: data.contact_email || '',
+            contact_address: ensureObject(data.contact_address),
+            maintenance_mode: data.maintenance_mode || false,
+            maintenance_message: ensureObject(data.maintenance_message),
             // SMTP
-            smtp_host: project.smtp_host || '',
-            smtp_port: project.smtp_port || 587,
-            smtp_encryption: project.smtp_encryption || 'tls',
-            smtp_username: project.smtp_username || '',
+            smtp_host: data.smtp_host || '',
+            smtp_port: data.smtp_port || 587,
+            smtp_encryption: data.smtp_encryption || 'tls',
+            smtp_username: data.smtp_username || '',
             smtp_password: '',
-            smtp_from_address: project.smtp_from_address || '',
-            smtp_from_name: project.smtp_from_name || '',
+            smtp_from_address: data.smtp_from_address || '',
+            smtp_from_name: data.smtp_from_name || '',
             // CAPTCHA
-            captcha_provider: project.captcha_provider || 'none',
-            recaptcha_site_key: project.recaptcha_site_key || '',
+            captcha_provider: data.captcha_provider || 'none',
+            recaptcha_site_key: data.recaptcha_site_key || '',
             recaptcha_secret_key: '',
-            turnstile_site_key: project.turnstile_site_key || '',
+            turnstile_site_key: data.turnstile_site_key || '',
             turnstile_secret_key: '',
         };
-        hasSmtpPassword.value = Boolean(project.has_smtp_password);
-        hasRecaptchaSecret.value = Boolean(project.has_recaptcha_secret_key);
-        hasTurnstileSecret.value = Boolean(project.has_turnstile_secret_key);
+        hasSmtpPassword.value = Boolean(data.has_smtp_password);
+        hasRecaptchaSecret.value = Boolean(data.has_recaptcha_secret_key);
+        hasTurnstileSecret.value = Boolean(data.has_turnstile_secret_key);
     } catch (err) {
         ElMessage.error(proxy.$t('admin.messages.load_failed'));
     } finally {
@@ -127,11 +126,9 @@ const buildPayload = () => {
 const handleSave = async () => {
     isLoading.value = true;
     try {
-        const currentRes = await projectService.current();
-        const projectId = currentRes.data.data.id;
         const payload = buildPayload();
-        await projectService.update(projectId, payload);
-        projectStore.updateProject(settings.value);
+        await settingsService.update(payload);
+        siteStore.updateSettings(settings.value);
         ElMessage.success(proxy.$t('admin.messages.settings_saved'));
     } catch (err) {
         ElMessage.error(err.response?.data?.message || proxy.$t('admin.messages.save_failed'));
@@ -143,14 +140,12 @@ const handleSave = async () => {
 const handleTestSmtp = async () => {
     smtpTesting.value = true;
     try {
-        const currentRes = await projectService.current();
-        const projectId = currentRes.data.data.id;
         // 先儲存設定再測試
         const payload = buildPayload();
-        await projectService.update(projectId, payload);
-        projectStore.updateProject(settings.value);
+        await settingsService.update(payload);
+        siteStore.updateSettings(settings.value);
         // 測試寄信
-        const res = await projectService.testSmtp(projectId);
+        const res = await settingsService.testSmtp();
         ElMessage.success(res.data.message || '測試信已發送');
     } catch (err) {
         ElMessage.error(err.response?.data?.message || '測試寄信失敗');
@@ -176,12 +171,6 @@ onMounted(() => {
           <el-col :span="12">
             <el-form-item :label="$t('admin.settings.site_name')">
               <TranslatableInput v-model="settings.name" :languages="languages" placeholder="" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item :label="$t('admin.settings.domain')">
-              <el-input v-model="settings.domain" placeholder="example.com" />
-              <div style="font-size: 12px; color: #909399; margin-top: 4px;">{{ $t('admin.settings.domain_hint') }}</div>
             </el-form-item>
           </el-col>
         </el-row>

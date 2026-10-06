@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Project;
+use App\Models\SiteSetting;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,7 +14,7 @@ class EnsureNotInMaintenance
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $site = Project::first();
+        $site = SiteSetting::current();
 
         if ($site?->maintenance_mode) {
             return response()->view('pages.maintenance', [

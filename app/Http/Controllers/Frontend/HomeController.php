@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use App\Models\Product;
 use App\Models\News;
-use App\Models\Project;
+use App\Models\SiteSetting;
 use App\Models\ProductCategory;
 use Illuminate\View\View;
 
@@ -17,8 +17,8 @@ class HomeController extends Controller
      */
     public function index(): View
     {
-        // Get site settings (default project)
-        $site = Project::first();
+        // Get site settings
+        $site = SiteSetting::current();
 
         // Get active banners
         $banners = Banner::where('is_active', true)

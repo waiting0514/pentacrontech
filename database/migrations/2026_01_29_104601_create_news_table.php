@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('news', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->nullable()->constrained()->onDelete('cascade');
             
             // Content
             $table->json('title');    // {"zh-TW": "...", "en": "..."}

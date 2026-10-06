@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('product_categories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('parent_id')->nullable()->constrained('product_categories')->restrictOnDelete();
             $table->json('name'); // {"zh-TW": "...", "en": "..."}
             $table->json('slug'); // {"zh-TW": "...", "en": "..."}
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->boolean('is_system')->default(false); // System-protected category
+            $table->string('image_path')->nullable();
             $table->timestamps();
             
             $table->index(['id']);

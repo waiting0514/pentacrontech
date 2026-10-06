@@ -2,26 +2,23 @@
 
 namespace Database\Seeders;
 
-use App\Models\Project;
+use App\Models\SiteSetting;
 use Illuminate\Database\Seeder;
 
-class ProjectSeeder extends Seeder
+class SiteSettingSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        // Check if project already exists
-        if (Project::count() > 0) {
-            $this->command->info('Projects already exist, skipping...');
+        if (SiteSetting::count() > 0) {
+            $this->command->info('Site settings already exist, skipping...');
             return;
         }
 
-        // Create default project
-        Project::create([
+        SiteSetting::create([
             'name' => 'AI Agency',
-            'domain' => 'localhost',
             'yearly_budget_twd' => 1000,
             'meta_title' => 'AI Agency - 智能內容管理平台',
             'meta_description' => '提供 AI 驅動的內容管理解決方案，包含產品管理、新聞發布、AI 文字與圖片生成等功能。',
@@ -33,6 +30,6 @@ class ProjectSeeder extends Seeder
             'contact_address' => '台北市信義區信義路五段7號',
         ]);
 
-        $this->command->info('Default project created successfully!');
+        $this->command->info('Default site settings created successfully!');
     }
 }

@@ -11,7 +11,6 @@ class KnowledgeArticle extends Model
     use HasTranslations;
 
     protected $fillable = [
-        'project_id',
         'category_id',
         'title',
         'slug',
@@ -64,11 +63,6 @@ class KnowledgeArticle extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(KnowledgeCategory::class, 'category_id');
-    }
-
-    public function project(): BelongsTo
-    {
-        return $this->belongsTo(Project::class);
     }
 
     public function scopePublished($query)

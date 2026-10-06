@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             LanguageSeeder::class,      // 建立語言設定
-            ProjectSeeder::class,       // 先建立專案
+            SiteSettingSeeder::class,   // 建立網站設定
             UserSeeder::class,          // 建立使用者（包含 admin）
             RolesAndPermissionsSeeder::class, // 建立角色與權限
             DefaultCategorySeeder::class, // 建立預設分類（未分類）

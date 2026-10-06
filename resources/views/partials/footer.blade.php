@@ -1,6 +1,6 @@
 {{-- Site Footer --}}
 @php
-    $site = $site ?? \App\Models\Project::first();
+    $site = $site ?? \App\Models\SiteSetting::current();
     $socialLinks = $site?->social_links ?? [];
 @endphp
 

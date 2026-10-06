@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\KnowledgeArticle;
 use App\Models\KnowledgeCategory;
-use App\Models\Project;
+use App\Models\SiteSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -13,7 +13,7 @@ class KnowledgeController extends Controller
 {
     public function index(): View
     {
-        $site = Project::first();
+        $site = SiteSetting::current();
 
         $articleList = KnowledgeArticle::published()
             ->with('category')
@@ -30,7 +30,7 @@ class KnowledgeController extends Controller
 
     public function category(string $categorySlug): View
     {
-        $site = Project::first();
+        $site = SiteSetting::current();
         $locale = app()->getLocale();
 
         $category = KnowledgeCategory::whereJsonContains('slug->' . $locale, $categorySlug)
@@ -54,7 +54,7 @@ class KnowledgeController extends Controller
 
     public function show(string $categorySlug, int $id, string $slug): View
     {
-        $site = Project::first();
+        $site = SiteSetting::current();
 
         $article = KnowledgeArticle::with('category')->findOrFail($id);
 

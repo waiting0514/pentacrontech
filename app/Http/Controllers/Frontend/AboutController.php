@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Models\Project;
+use App\Models\SiteSetting;
 use Illuminate\View\View;
 
 class AboutController extends Controller
 {
     public function index(): View
     {
-        $site = Project::first();
+        $site = SiteSetting::current();
 
         return view('pages.about', [
             'site' => $site,

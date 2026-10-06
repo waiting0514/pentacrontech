@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\Project;
+use App\Models\SiteSetting;
 use App\Models\User;
-use App\Services\ProjectMailService;
+use App\Services\SiteMailService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Laravel\Sanctum\Sanctum;
@@ -12,12 +12,12 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
-class ProjectSmtpTest extends TestCase
+class SiteSettingSmtpTest extends TestCase
 {
     use RefreshDatabase;
 
     private User $admin;
-    private Project $project;
+    private SiteSetting $setting;
 
     protected function setUp(): void
     {
@@ -28,9 +28,8 @@ class ProjectSmtpTest extends TestCase
         $this->admin = User::factory()->create(['is_active' => true]);
         $this->admin->assignRole('super-admin');
 
-        $this->project = Project::create([
-            'name' => ['zh-TW' => '測試專案'],
-            'domain' => 'test.com',
+        $this->setting = SiteSetting::create([
+            'name' => ['zh-TW' => '測試網站'],
             'yearly_budget_twd' => 1000,
             'contact_email' => 'contact@test.com',
         ]);
@@ -40,7 +39,7 @@ class ProjectSmtpTest extends TestCase
     {
         Sanctum::actingAs($this->admin);
 
-        $response = $this->putJson("/api/projects/{$this->project->id}", [
+        $response = $this->putJson('/api/settings', [
             'smtp_host' => 'smtp.gmail.com',
             'smtp_port' => 587,
             'smtp_encryption' => 'tls',
@@ -52,47 +51,47 @@ class ProjectSmtpTest extends TestCase
 
         $response->assertOk();
 
-        $this->project->refresh();
-        $this->assertEquals('smtp.gmail.com', $this->project->smtp_host);
-        $this->assertEquals(587, $this->project->smtp_port);
-        $this->assertEquals('user@gmail.com', $this->project->smtp_username);
-        $this->assertEquals('test-app-password', $this->project->smtp_password);
-        $this->assertEquals('noreply@test.com', $this->project->smtp_from_address);
+        $this->setting->refresh();
+        $this->assertEquals('smtp.gmail.com', $this->setting->smtp_host);
+        $this->assertEquals(587, $this->setting->smtp_port);
+        $this->assertEquals('user@gmail.com', $this->setting->smtp_username);
+        $this->assertEquals('test-app-password', $this->setting->smtp_password);
+        $this->assertEquals('noreply@test.com', $this->setting->smtp_from_address);
     }
 
     public function test_empty_password_does_not_overwrite_existing(): void
     {
         Sanctum::actingAs($this->admin);
 
-        $this->project->update([
+        $this->setting->update([
             'smtp_host' => 'smtp.gmail.com',
             'smtp_username' => 'user@gmail.com',
             'smtp_password' => 'original-password',
         ]);
 
-        $response = $this->putJson("/api/projects/{$this->project->id}", [
+        $response = $this->putJson('/api/settings', [
             'smtp_host' => 'smtp.gmail.com',
             'smtp_username' => 'new-user@gmail.com',
         ]);
 
         $response->assertOk();
 
-        $this->project->refresh();
-        $this->assertEquals('new-user@gmail.com', $this->project->smtp_username);
-        $this->assertEquals('original-password', $this->project->smtp_password);
+        $this->setting->refresh();
+        $this->assertEquals('new-user@gmail.com', $this->setting->smtp_username);
+        $this->assertEquals('original-password', $this->setting->smtp_password);
     }
 
     public function test_api_response_does_not_contain_smtp_password(): void
     {
         Sanctum::actingAs($this->admin);
 
-        $this->project->update([
+        $this->setting->update([
             'smtp_host' => 'smtp.gmail.com',
             'smtp_username' => 'user@gmail.com',
             'smtp_password' => 'secret-password',
         ]);
 
-        $response = $this->getJson('/api/projects/current');
+        $response = $this->getJson('/api/settings');
 
         $response->assertOk();
         $response->assertJsonMissing(['smtp_password' => 'secret-password']);
@@ -103,31 +102,31 @@ class ProjectSmtpTest extends TestCase
     {
         Sanctum::actingAs($this->admin);
 
-        $response = $this->getJson('/api/projects/current');
+        $response = $this->getJson('/api/settings');
 
         $response->assertOk();
         $response->assertJsonFragment(['has_smtp_password' => false]);
     }
 
-    public function test_project_mail_service_fallback(): void
+    public function test_site_mail_service_fallback(): void
     {
-        $service = new ProjectMailService();
+        $service = new SiteMailService();
 
-        // Project without SMTP config should return default mailer
-        $mailer = $service->getMailer($this->project);
+        // Site without SMTP config should return default mailer
+        $mailer = $service->getMailer($this->setting);
         $this->assertNotNull($mailer);
-        $this->assertFalse($service->hasSmtpConfig($this->project));
+        $this->assertFalse($service->hasSmtpConfig($this->setting));
     }
 
-    public function test_project_mail_service_with_config(): void
+    public function test_site_mail_service_with_config(): void
     {
-        $this->project->update([
+        $this->setting->update([
             'smtp_host' => 'smtp.gmail.com',
             'smtp_username' => 'user@gmail.com',
             'smtp_password' => 'test-password',
         ]);
 
-        $service = new ProjectMailService();
-        $this->assertTrue($service->hasSmtpConfig($this->project));
+        $service = new SiteMailService();
+        $this->assertTrue($service->hasSmtpConfig($this->setting));
     }
 }

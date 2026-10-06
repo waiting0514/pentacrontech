@@ -6,7 +6,7 @@ export { default as newsCategoryService } from './newsCategoryService';
 export { default as bannerService } from './bannerService';
 export { default as aiService } from './aiService';
 export { default as usageService } from './usageService';
-export { default as projectService } from './projectService';
+export { default as settingsService } from './settingsService';
 export { default as authService } from './authService';
 export { default as uploadService } from './uploadService';
 export { default as userService } from './userService';

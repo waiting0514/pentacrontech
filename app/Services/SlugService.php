@@ -8,10 +8,10 @@ use Overtrue\Pinyin\Pinyin;
 
 class SlugService
 {
-    public function generateSlug(string $name, string $table, ?int $projectId = null, ?int $excludeId = null): string
+    public function generateSlug(string $name, string $table, ?int $excludeId = null): string
     {
         $baseSlug = $this->buildBaseSlug($name);
-        return $this->ensureUnique($baseSlug, $table, $projectId, $excludeId);
+        return $this->ensureUnique($baseSlug, $table, $excludeId);
     }
 
     protected function buildBaseSlug(string $name): string
@@ -29,12 +29,12 @@ class SlugService
         return 'item-' . substr(md5($name), 0, 8);
     }
 
-    protected function ensureUnique(string $slug, string $table, ?int $projectId = null, ?int $excludeId = null): string
+    protected function ensureUnique(string $slug, string $table, ?int $excludeId = null): string
     {
         $originalSlug = $slug;
         $counter = 1;
 
-        while ($this->slugExists($slug, $table, $projectId, $excludeId)) {
+        while ($this->slugExists($slug, $table, $excludeId)) {
             $slug = $originalSlug . '-' . $counter;
             $counter++;
         }
@@ -42,7 +42,7 @@ class SlugService
         return $slug;
     }
 
-    protected function slugExists(string $slug, string $table, ?int $projectId = null, ?int $excludeId = null): bool
+    protected function slugExists(string $slug, string $table, ?int $excludeId = null): bool
     {
         $query = DB::table($table)->where(function($q) use ($slug) {
             $q->where('slug', $slug)
@@ -50,10 +50,6 @@ class SlugService
               ->orWhere('slug->en', $slug)
               ->orWhere('slug->zh', $slug);
         });
-
-        if ($projectId !== null) {
-            $query->where('project_id', $projectId);
-        }
 
         if ($excludeId !== null) {
             $query->where('id', '!=', $excludeId);

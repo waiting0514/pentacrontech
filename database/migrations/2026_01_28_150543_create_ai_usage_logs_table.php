@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('ai_usage_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('project_id')->nullable()->constrained()->onDelete('set null');
             $table->string('provider'); // 'openai', 'photoroom', 'clipdrop'
             $table->string('feature');  // 'text_gen', 'translation', 'vision_parse', 'remove_bg', 'scene_gen'
             $table->integer('input_tokens')->nullable();
             $table->integer('output_tokens')->nullable();
             $table->decimal('cost_usd', 10, 6);
+            $table->decimal('display_cost_twd', 10, 2)->nullable();
             $table->string('status'); // 'success', 'failed'
             $table->timestamps();
         });

@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('news_categories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->nullable()->constrained()->onDelete('cascade');
             $table->json('name'); // {"zh-TW": "...", "en": "..."}
             $table->json('slug'); // {"zh-TW": "...", "en": "..."}
             $table->integer('sort_order')->default(0);

@@ -11,23 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('projects', function (Blueprint $table) {
+        Schema::create('site_settings', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('domain')->nullable();
+            $table->text('name');
             $table->text('description')->nullable();
-            
+
             // Budget
-            $table->decimal('monthly_budget_usd', 10, 2)->default(100.00);
-            $table->decimal('monthly_usage_usd', 10, 2)->default(0.00);
-            $table->boolean('is_active')->default(true);
+            $table->decimal('yearly_budget_twd', 10, 2)->default(1000.00);
+            $table->decimal('yearly_usage_twd', 10, 2)->default(0.00);
             $table->boolean('is_ai_enabled')->default(true);
             $table->boolean('product_default_inquiry_mode')->default(false);
             
             // SEO Meta Tags
-            $table->string('meta_title')->nullable();
+            $table->text('meta_title')->nullable();
             $table->text('meta_description')->nullable();
-            $table->string('meta_keywords')->nullable();
+            $table->text('meta_keywords')->nullable();
             
             // Maintenance Mode
             $table->boolean('maintenance_mode')->default(false);
@@ -46,7 +44,21 @@ return new class extends Migration
             
             // Google reCAPTCHA
             $table->string('recaptcha_site_key')->nullable();
-            $table->string('recaptcha_secret_key')->nullable();
+            $table->text('recaptcha_secret_key')->nullable(); // 加密儲存，密文長度超過 varchar(255)
+
+            // Captcha provider / Cloudflare Turnstile
+            $table->string('captcha_provider', 20)->default('none');
+            $table->string('turnstile_site_key')->nullable();
+            $table->text('turnstile_secret_key')->nullable(); // 加密儲存
+
+            // SMTP
+            $table->string('smtp_host')->nullable();
+            $table->unsignedSmallInteger('smtp_port')->nullable();
+            $table->string('smtp_encryption', 10)->nullable();
+            $table->string('smtp_username')->nullable();
+            $table->text('smtp_password')->nullable();
+            $table->string('smtp_from_address')->nullable();
+            $table->string('smtp_from_name')->nullable();
             
             $table->timestamps();
         });
@@ -57,6 +69,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('projects');
+        Schema::dropIfExists('site_settings');
     }
 };

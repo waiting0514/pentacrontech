@@ -78,7 +78,7 @@ onMounted(async () => {
     <el-card v-if="currentUsage" style="margin-bottom: 20px; background: linear-gradient(135deg, #409eff, #7c3aed); color: #fff;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <h3 style="color: #fff; margin: 0;">{{ $t('admin.usage.yearly_usage') }}</h3>
-        <el-tag v-if="currentUsage.project_name" effect="dark" round>{{ currentUsage.project_name }}</el-tag>
+        <el-tag v-if="currentUsage.site_name" effect="dark" round>{{ currentUsage.site_name }}</el-tag>
       </div>
       <el-row :gutter="20" style="margin-bottom: 16px;">
         <el-col :span="6">

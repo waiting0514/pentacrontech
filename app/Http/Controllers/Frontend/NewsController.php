@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Models\News;
-use App\Models\Project;
+use App\Models\SiteSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -15,7 +15,7 @@ class NewsController extends Controller
      */
     public function index(): View
     {
-        $site = Project::first();
+        $site = SiteSetting::current();
         
         $news = News::published()
             ->latest('published_at')
@@ -34,7 +34,7 @@ class NewsController extends Controller
      */
     public function show(int $id, string $slug): View
     {
-        $site = Project::first();
+        $site = SiteSetting::current();
         
         $news = News::findOrFail($id);
 

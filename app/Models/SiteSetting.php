@@ -3,12 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Translatable\HasTranslations;
 
-class Project extends Model
+class SiteSetting extends Model
 {
     use LogsActivity, HasTranslations;
 
@@ -21,13 +20,13 @@ class Project extends Model
         'contact_address',
     ];
 
+    protected $table = 'site_settings';
+
     protected $fillable = [
         'name',
-        'domain',
         'description',
         'yearly_budget_twd',
         'yearly_usage_twd',
-        'is_active',
         'is_ai_enabled',
         'product_default_inquiry_mode',
         'meta_title',
@@ -37,7 +36,6 @@ class Project extends Model
         'maintenance_message',
         // Global Site Settings
         'logo_url',
-        'favicon_url',
         'social_links',
         // Contact Info (for LocalBusiness Schema and display)
         'contact_email',
@@ -69,7 +67,6 @@ class Project extends Model
     protected $casts = [
         'yearly_budget_twd' => 'decimal:2',
         'yearly_usage_twd' => 'decimal:2',
-        'is_active' => 'boolean',
         'is_ai_enabled' => 'boolean',
         'product_default_inquiry_mode' => 'boolean',
         'maintenance_mode' => 'boolean',
@@ -83,19 +80,11 @@ class Project extends Model
     ];
 
     /**
-     * Get the products for the project.
+     * 取得全站唯一的設定列；尚未建立時以預設值建立。
      */
-    public function products(): HasMany
+    public static function current(): static
     {
-        return $this->hasMany(Product::class);
-    }
-
-    /**
-     * Get the AI usage logs for the project.
-     */
-    public function aiUsageLogs(): HasMany
-    {
-        return $this->hasMany(AiUsageLog::class);
+        return static::query()->firstOrCreate([], ['name' => config('app.name')]);
     }
 
     /**
@@ -132,7 +121,7 @@ class Project extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'domain', 'yearly_budget_twd', 'is_active'])
+            ->logOnly(['name', 'yearly_budget_twd'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

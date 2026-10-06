@@ -42,7 +42,6 @@ class NewsCategoryObserver
         $category->slug = $this->slugService->generateSlug(
             $name,
             'news_categories',
-            $category->project_id,
             $category->id
         );
     }
@@ -62,8 +61,7 @@ class NewsCategoryObserver
 
     protected function slugExists(string $slug, NewsCategory $category): bool
     {
-        $query = NewsCategory::where('slug', $slug)
-            ->where('project_id', $category->project_id);
+        $query = NewsCategory::where('slug', $slug);
 
         if ($category->id) {
             $query->where('id', '!=', $category->id);

@@ -45,7 +45,7 @@ This project uses **Laravel Sail** (Docker). All commands must run through Sail:
 
 ## Architecture Overview
 
-**Multi-tenant CMS with AI features** - Single Laravel app serving multiple client "Projects", each with its own products, news, banners, and AI budget.
+**Single-tenant CMS with AI features** - One Laravel app for a single company. Site-wide configuration (SEO, contact, SMTP, captcha, maintenance, AI budget) lives in one `site_settings` row, accessed via `SiteSetting::current()`.
 
 ### Tech Stack
 - **Backend**: Laravel 12, PHP 8.2+, MySQL 8.4, Redis, Meilisearch
@@ -89,7 +89,7 @@ $casts = ['name' => 'array', 'description' => 'array'];
 - See `ProductResource.php` for image URL transformation pattern
 
 ### AI Budget Control
-Projects have monthly USD budgets. `AiCostControlService` checks budget before API calls and records usage to `ai_usage_logs` table.
+The site has a yearly TWD AI budget (`site_settings.yearly_budget_twd`). `AiCostControlService` checks budget before API calls and records usage to `ai_usage_logs` table.
 
 ## Testing
 

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductCategory;
-use App\Models\Project;
+use App\Models\SiteSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -17,7 +17,7 @@ class ProductController extends Controller
      */
     public function index(Request $request): View
     {
-        $site = Project::first();
+        $site = SiteSetting::current();
         $categories = ProductCategory::where('is_active', true)
             ->orderBy('sort_order')
             ->get();
@@ -56,11 +56,11 @@ class ProductController extends Controller
      */
     public function show(int $id, string $slug): View
     {
-        $site = Project::first();
+        $site = SiteSetting::current();
         
         $product = Product::with(['primaryImage', 'images'])->findOrFail($id);
 
-        // Get related products (same project, exclude current)
+        // Get related products (exclude current)
         $relatedProducts = Product::with(['primaryImage', 'images'])->where('id', '!=', $id)
             ->latest()
             ->take(4)
@@ -101,7 +101,7 @@ class ProductController extends Controller
      */
     public function category(string $slug): View
     {
-        $site = Project::first();
+        $site = SiteSetting::current();
         $category = ProductCategory::where(function($q) use ($slug) {
                 $q->where('slug', $slug)
                   ->orWhere('slug->zh-TW', $slug)

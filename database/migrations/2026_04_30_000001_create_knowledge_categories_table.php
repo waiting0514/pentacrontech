@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('knowledge_categories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->nullable()->constrained()->onDelete('cascade');
             $table->json('name');
             $table->json('slug');
             $table->json('description')->nullable();
@@ -18,7 +17,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-            $table->index(['project_id', 'is_active']);
+            $table->index('is_active');
         });
     }
 

@@ -11,7 +11,6 @@ class News extends Model
     use HasTranslations;
 
     protected $fillable = [
-        'project_id',
         'title',
         'slug',
         'content',
@@ -59,14 +58,6 @@ class News extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(NewsCategory::class);
-    }
-
-    /**
-     * Get the project that owns the news.
-     */
-    public function project(): BelongsTo
-    {
-        return $this->belongsTo(Project::class);
     }
 
     /**

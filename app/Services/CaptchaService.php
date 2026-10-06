@@ -2,24 +2,24 @@
 
 namespace App\Services;
 
-use App\Models\Project;
+use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 class CaptchaService
 {
-    public static function getSiteKey(Project $project): ?string
+    public static function getSiteKey(SiteSetting $setting): ?string
     {
-        return match ($project->captcha_provider) {
-            'recaptcha' => $project->recaptcha_site_key,
-            'turnstile' => $project->turnstile_site_key,
+        return match ($setting->captcha_provider) {
+            'recaptcha' => $setting->recaptcha_site_key,
+            'turnstile' => $setting->turnstile_site_key,
             default => null,
         };
     }
 
-    public static function verify(Project $project, Request $request): bool
+    public static function verify(SiteSetting $setting, Request $request): bool
     {
-        $provider = $project->captcha_provider ?? 'none';
+        $provider = $setting->captcha_provider ?? 'none';
 
         if ($provider === 'none') {
             return true;
@@ -27,12 +27,12 @@ class CaptchaService
 
         if ($provider === 'recaptcha') {
             $token = $request->input('g-recaptcha-response');
-            if (!$token || !$project->recaptcha_secret_key) {
+            if (!$token || !$setting->recaptcha_secret_key) {
                 return false;
             }
 
             $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-                'secret' => $project->recaptcha_secret_key,
+                'secret' => $setting->recaptcha_secret_key,
                 'response' => $token,
                 'remoteip' => $request->ip(),
             ]);
@@ -42,12 +42,12 @@ class CaptchaService
 
         if ($provider === 'turnstile') {
             $token = $request->input('cf-turnstile-response');
-            if (!$token || !$project->turnstile_secret_key) {
+            if (!$token || !$setting->turnstile_secret_key) {
                 return false;
             }
 
             $response = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
-                'secret' => $project->turnstile_secret_key,
+                'secret' => $setting->turnstile_secret_key,
                 'response' => $token,
                 'remoteip' => $request->ip(),
             ]);

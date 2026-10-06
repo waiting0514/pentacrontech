@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\SiteSetting;
 use App\Models\User;
-use App\Models\Project;
 use App\Services\SlugService;
 use App\Services\AiCostControlService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,7 +19,6 @@ class SlugAndCategoryTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
-    protected Project $project;
     protected ProductCategory $defaultCategory;
 
     protected function setUp(): void
@@ -36,15 +35,8 @@ class SlugAndCategoryTest extends TestCase
 
         Role::create(['name' => 'super-admin', 'guard_name' => 'web']);
 
-        // Create project
-        $this->project = Project::create([
-            'name' => 'Test Project',
-            'monthly_budget_usd' => 100,
-        ]);
-
         // Create default category
         $this->defaultCategory = ProductCategory::create([
-            'project_id' => $this->project->id,
             'name' => ['zh' => '未分類', 'en' => 'Uncategorized'],
             'slug' => 'uncategorized',
             'is_system' => true,
@@ -63,7 +55,6 @@ class SlugAndCategoryTest extends TestCase
     public function test_product_slug_auto_generated_on_create(): void
     {
         $product = Product::create([
-            'project_id' => $this->project->id,
             'name' => ['zh' => 'Test Product', 'en' => 'Test Product'],
             'description' => ['zh' => 'Description'],
             'price' => 100,
@@ -76,7 +67,6 @@ class SlugAndCategoryTest extends TestCase
     public function test_product_uses_provided_slug(): void
     {
         $product = Product::create([
-            'project_id' => $this->project->id,
             'name' => ['zh' => 'Test Product'],
             'description' => ['zh' => 'Description'],
             'price' => 100,
@@ -93,7 +83,6 @@ class SlugAndCategoryTest extends TestCase
     public function test_category_slug_auto_generated_on_create(): void
     {
         $category = ProductCategory::create([
-            'project_id' => $this->project->id,
             'name' => ['zh' => '電子產品', 'en' => 'Electronics'],
             'is_active' => true,
         ]);
@@ -105,7 +94,6 @@ class SlugAndCategoryTest extends TestCase
     public function test_category_uses_provided_slug(): void
     {
         $category = ProductCategory::create([
-            'project_id' => $this->project->id,
             'name' => ['zh' => '電子產品'],
             'slug' => 'custom-category',
             'is_active' => true,
@@ -121,7 +109,6 @@ class SlugAndCategoryTest extends TestCase
     public function test_slug_conflict_auto_appends_suffix(): void
     {
         $product1 = Product::create([
-            'project_id' => $this->project->id,
             'name' => ['zh' => 'Test Product'],
             'description' => ['zh' => 'Description'],
             'price' => 100,
@@ -129,7 +116,6 @@ class SlugAndCategoryTest extends TestCase
         ]);
 
         $product2 = Product::create([
-            'project_id' => $this->project->id,
             'name' => ['zh' => 'Test Product'],
             'description' => ['zh' => 'Description'],
             'price' => 100,
@@ -138,33 +124,6 @@ class SlugAndCategoryTest extends TestCase
 
         $this->assertEquals('test-product', $product1->slug);
         $this->assertEquals('test-product-1', $product2->slug);
-    }
-
-    public function test_different_projects_can_have_same_slug(): void
-    {
-        $project2 = Project::create([
-            'name' => 'Second Project',
-            'monthly_budget_usd' => 100,
-        ]);
-
-        $product1 = Product::create([
-            'project_id' => $this->project->id,
-            'name' => ['zh' => 'Test Product'],
-            'description' => ['zh' => 'Description'],
-            'price' => 100,
-            'slug' => 'same-slug',
-        ]);
-
-        $product2 = Product::create([
-            'project_id' => $project2->id,
-            'name' => ['zh' => 'Test Product'],
-            'description' => ['zh' => 'Description'],
-            'price' => 100,
-            'slug' => 'same-slug',
-        ]);
-
-        $this->assertEquals('same-slug', $product1->slug);
-        $this->assertEquals('same-slug', $product2->slug);
     }
 
     // ==========================================
@@ -189,7 +148,6 @@ class SlugAndCategoryTest extends TestCase
         $this->assertTrue($this->defaultCategory->isSystemCategory());
 
         $regularCategory = ProductCategory::create([
-            'project_id' => $this->project->id,
             'name' => ['zh' => '一般分類'],
             'slug' => 'regular',
             'is_active' => true,
@@ -205,14 +163,12 @@ class SlugAndCategoryTest extends TestCase
     public function test_products_reassigned_to_default_category_on_delete(): void
     {
         $category = ProductCategory::create([
-            'project_id' => $this->project->id,
             'name' => ['zh' => '臨時分類'],
             'slug' => 'temp-category',
             'is_active' => true,
         ]);
 
         $product = Product::create([
-            'project_id' => $this->project->id,
             'category_id' => $category->id,
             'name' => ['zh' => 'Test Product'],
             'description' => ['zh' => 'Description'],
@@ -232,7 +188,6 @@ class SlugAndCategoryTest extends TestCase
     public function test_delete_empty_category(): void
     {
         $category = ProductCategory::create([
-            'project_id' => $this->project->id,
             'name' => ['zh' => '空分類'],
             'slug' => 'empty-category',
             'is_active' => true,
@@ -257,15 +212,15 @@ class SlugAndCategoryTest extends TestCase
     {
         // Mock the SlugService to simulate AI failure
         $mockCostControl = Mockery::mock(AiCostControlService::class);
-        $mockCostControl->shouldReceive('getCurrentProject')
-            ->andReturn($this->project);
+        $mockCostControl->shouldReceive('getSiteSetting')
+            ->andReturn(SiteSetting::current());
         $mockCostControl->shouldReceive('checkBudget')
             ->andReturn(false); // Budget exceeded
 
         $slugService = new SlugService($mockCostControl);
 
         // Generate slug with Chinese name - should fallback to Str::slug
-        $slug = $slugService->generateSlug('測試產品', 'products', $this->project->id);
+        $slug = $slugService->generateSlug('測試產品', 'products');
 
         // Should generate a slug even without AI
         $this->assertNotNull($slug);
@@ -274,7 +229,7 @@ class SlugAndCategoryTest extends TestCase
 
     public function test_get_default_category_method(): void
     {
-        $defaultCategory = ProductCategory::getDefaultCategory($this->project->id);
+        $defaultCategory = ProductCategory::getDefaultCategory();
 
         $this->assertNotNull($defaultCategory);
         $this->assertTrue($defaultCategory->is_system);

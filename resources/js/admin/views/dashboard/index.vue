@@ -3,13 +3,13 @@ import { ref, onMounted, getCurrentInstance } from 'vue';
 import { useRouter } from 'vue-router';
 import { usageService, bannerService, productService, newsService } from '../../../services';
 import { usePermission } from '../../composables/usePermission';
-import { useProjectStore } from '../../store/modules/project';
+import { useSiteStore } from '../../store/modules/site';
 import { useUserStore } from '../../store/modules/user';
 
 const { proxy } = getCurrentInstance();
 const userStore = useUserStore();
 const { is } = usePermission();
-const projectStore = useProjectStore();
+const siteStore = useSiteStore();
 
 const router = useRouter();
 const isLoading = ref(true);
@@ -124,7 +124,7 @@ onMounted(loadStats);
           </div>
         </el-card>
       </el-col>
-      <el-col v-if="is('super-admin') && projectStore.isAiEnabled" :span="6">
+      <el-col v-if="is('super-admin') && siteStore.isAiEnabled" :span="6">
         <el-card shadow="hover" class="stat-card" @click="navigateTo('/admin/usage')">
           <div style="display: flex; align-items: center; gap: 16px;">
             <div class="stat-icon" style="background: linear-gradient(135deg, #7c3aed, #a78bfa);">
@@ -141,7 +141,7 @@ onMounted(loadStats);
 
     <!-- Usage Overview -->
     <el-row :gutter="20" style="margin-bottom: 24px;">
-      <el-col v-if="is('super-admin') && projectStore.isAiEnabled" :span="12">
+      <el-col v-if="is('super-admin') && siteStore.isAiEnabled" :span="12">
         <el-card :header="$t('admin.dashboard.ai_usage_overview')">
           <div style="margin-bottom: 12px; display: flex; justify-content: space-between;">
             <span>{{ $t('admin.dashboard.used_this_year') }}：NT${{ stats.yearlyUsage.toFixed(0) }}</span>
@@ -154,7 +154,7 @@ onMounted(loadStats);
           />
         </el-card>
       </el-col>
-      <el-col :span="projectStore.isAiEnabled ? 12 : 24">
+      <el-col :span="siteStore.isAiEnabled ? 12 : 24">
         <el-card :header="$t('admin.dashboard.quick_actions')">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
             <el-button type="primary" @click="navigateTo('/admin/product')">
@@ -168,7 +168,7 @@ onMounted(loadStats);
             </el-button>
             <!-- AI Tools temporarily hidden -->
             <!--
-            <el-button v-if="projectStore.isAiEnabled" @click="navigateTo('/admin/ai-tools')">
+            <el-button v-if="siteStore.isAiEnabled" @click="navigateTo('/admin/ai-tools')">
               <el-icon><MagicStick /></el-icon> {{ $t('admin.dashboard.ai_tools') }}
             </el-button>
             -->

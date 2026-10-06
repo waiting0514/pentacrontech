@@ -7,13 +7,13 @@ import TranslatableInput from '../../components/TranslatableInput.vue';
 import TranslatableRichText from '../../components/TranslatableRichText.vue';
 import CameraUploader from '../../components/CameraUploader.vue';
 import { usePermission } from '../../composables/usePermission';
-import { useProjectStore } from '../../store/modules/project';
+import { useSiteStore } from '../../store/modules/site';
 import { useProductStore } from '../../store/modules/product';
 import { useLanguageStore } from '../../store/modules/language';
 
 const { proxy } = getCurrentInstance();
 const { can } = usePermission();
-const projectStore = useProjectStore();
+const siteStore = useSiteStore();
 const productStore = useProductStore();
 const languageStore = useLanguageStore();
 const languages = computed(() => languageStore.languages);
@@ -232,7 +232,7 @@ const openCreate = async () => {
   newProductPreviews.value.forEach(url => URL.revokeObjectURL(url));
   newProductPreviews.value = [];
 
-  const defaultInquiry = Boolean(projectStore.currentProject?.product_default_inquiry_mode);
+  const defaultInquiry = Boolean(siteStore.settings?.product_default_inquiry_mode);
 
   // Initialize objects with language keys to ensure reactivity
   const langKeys = {};
@@ -513,7 +513,7 @@ onMounted(async () => {
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
       <h2>{{ $t('admin.products.title') }}</h2>
       <div style="display: flex; gap: 8px;">
-        <el-button v-if="projectStore.isAiEnabled" type="warning" plain @click="showAiDialog = true">
+        <el-button v-if="siteStore.isAiEnabled" type="warning" plain @click="showAiDialog = true">
           <el-icon><MagicStick /></el-icon> AI 辨識建立
         </el-button>
         <el-button type="primary" @click="openCreate">
@@ -596,7 +596,7 @@ onMounted(async () => {
 
     <!-- Dialog -->
     <el-dialog v-model="showDialog" :title="isEditing ? $t('admin.products.edit') : $t('admin.products.create')" width="800px" destroy-on-close>
-      <div v-if="projectStore.isAiEnabled" style="text-align: right; margin-bottom: 15px;">
+      <div v-if="siteStore.isAiEnabled" style="text-align: right; margin-bottom: 15px;">
         <el-button type="warning" plain :icon="MagicStick" @click="openTranslateDialog">
           ✨ AI 一鍵翻譯
         </el-button>

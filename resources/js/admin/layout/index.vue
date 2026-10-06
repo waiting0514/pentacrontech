@@ -3,10 +3,10 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Sidebar from './components/Sidebar.vue';
 import Navbar from './components/Navbar.vue';
-import { useProjectStore } from '../store/modules/project';
+import { useSiteStore } from '../store/modules/site';
 
 const isCollapse = ref(false);
-const projectStore = useProjectStore();
+const siteStore = useSiteStore();
 const router = useRouter();
 
 const isNavigating = ref(false);
@@ -20,7 +20,7 @@ const toggleSidebar = () => {
 };
 
 onMounted(() => {
-    projectStore.fetchCurrentProject();
+    siteStore.fetchSettings();
 
     removeBeforeEach = router.beforeEach(() => {
         if (navTimer) clearTimeout(navTimer);

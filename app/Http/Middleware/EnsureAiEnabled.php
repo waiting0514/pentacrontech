@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Project;
+use App\Models\SiteSetting;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,12 +16,12 @@ class EnsureAiEnabled
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $site = Project::first();
+        $site = SiteSetting::current();
 
         if (!$site || !$site->is_ai_enabled) {
             return response()->json([
                 'success' => false,
-                'message' => 'AI features are disabled for this project.',
+                'message' => 'AI features are disabled for this site.',
                 'error_code' => 'AI_DISABLED'
             ], 403);
         }

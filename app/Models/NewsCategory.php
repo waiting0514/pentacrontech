@@ -10,7 +10,6 @@ class NewsCategory extends Model
     use HasTranslations;
 
     protected $fillable = [
-        'project_id',
         'name',
         'slug',
         'sort_order',

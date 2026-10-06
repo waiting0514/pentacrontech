@@ -38,21 +38,11 @@ Route::middleware(['auth:sanctum', 'active', 'role:super-admin|admin|manager|edi
     // Logout
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // Project routes
-    Route::prefix('projects')->group(function () {
-        Route::get('/', [App\Http\Controllers\Api\ProjectController::class, 'index']);
-        Route::post('/', [App\Http\Controllers\Api\ProjectController::class, 'store']);
-        
-        // Specific routes MUST come before parameterized routes
-        Route::get('/current', [App\Http\Controllers\Api\ProjectController::class, 'current']);
-        Route::post('/{project}/switch', [App\Http\Controllers\Api\ProjectController::class, 'switch']);
-        Route::get('/{project}/statistics', [App\Http\Controllers\Api\ProjectController::class, 'statistics']);
-        Route::post('/{project}/test-smtp', [App\Http\Controllers\Api\ProjectController::class, 'testSmtp']);
-        
-        // Parameterized routes come last
-        Route::get('/{project}', [App\Http\Controllers\Api\ProjectController::class, 'show']);
-        Route::put('/{project}', [App\Http\Controllers\Api\ProjectController::class, 'update']);
-        Route::delete('/{project}', [App\Http\Controllers\Api\ProjectController::class, 'destroy']);
+    // Site settings (single-tenant)
+    Route::prefix('settings')->group(function () {
+        Route::get('/', [App\Http\Controllers\Api\SiteSettingController::class, 'show']);
+        Route::put('/', [App\Http\Controllers\Api\SiteSettingController::class, 'update']);
+        Route::post('/test-smtp', [App\Http\Controllers\Api\SiteSettingController::class, 'testSmtp']);
     });
 
     // Product routes (API)

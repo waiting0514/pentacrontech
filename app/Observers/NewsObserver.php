@@ -42,7 +42,6 @@ class NewsObserver
         $news->slug = $this->slugService->generateSlug(
             $title,
             'news',
-            $news->project_id,
             $news->id
         );
     }
@@ -62,8 +61,7 @@ class NewsObserver
 
     protected function slugExists(string $slug, News $news): bool
     {
-        $query = News::where('slug', $slug)
-            ->where('project_id', $news->project_id);
+        $query = News::where('slug', $slug);
 
         if ($news->id) {
             $query->where('id', '!=', $news->id);

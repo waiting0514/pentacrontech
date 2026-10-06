@@ -135,7 +135,7 @@ class ProductCategoryController extends Controller
         }
 
         // Get default category for reassignment
-        $defaultCategory = ProductCategory::getDefaultCategory($productCategory->project_id);
+        $defaultCategory = ProductCategory::getDefaultCategory();
 
         // Reassign products to default category
         $reassignedCount = 0;

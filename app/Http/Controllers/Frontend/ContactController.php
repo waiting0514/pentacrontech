@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Models\Project;
+use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use App\Services\CaptchaService;
-use App\Services\ProjectMailService;
+use App\Services\SiteMailService;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 
@@ -17,7 +17,7 @@ class ContactController extends Controller
      */
     public function index(): View
     {
-        $site = Project::first();
+        $site = SiteSetting::current();
 
         return view('pages.contact', [
             'site' => $site,
@@ -33,7 +33,7 @@ class ContactController extends Controller
      */
     public function submit(Request $request): RedirectResponse
     {
-        $site = Project::first();
+        $site = SiteSetting::current();
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -50,7 +50,7 @@ class ContactController extends Controller
         // Send email notification
         try {
             if ($site?->contact_email) {
-                $mailService = app(ProjectMailService::class);
+                $mailService = app(SiteMailService::class);
                 $fromAddress = $site->smtp_from_address ?? $site->smtp_username ?? config('mail.from.address');
                 $fromName = $site->smtp_from_name ?? $site->name ?? config('mail.from.name');
 

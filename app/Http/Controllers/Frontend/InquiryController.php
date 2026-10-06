@@ -7,19 +7,19 @@ use App\Mail\InquirySubmittedMail;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
-use App\Models\Project;
+use App\Models\SiteSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\CaptchaService;
-use App\Services\ProjectMailService;
+use App\Services\SiteMailService;
 use Illuminate\View\View;
 
 class InquiryController extends Controller
 {
     public function index(): View
     {
-        $site    = Project::first();
+        $site    = SiteSetting::current();
         $profile = auth()->check() ? auth()->user()->customerProfile : null;
 
         return view('inquiry.index', [
@@ -34,7 +34,7 @@ class InquiryController extends Controller
 
     public function success(): View
     {
-        $site = Project::first();
+        $site = SiteSetting::current();
 
         return view('inquiry.success', [
             'site' => $site,
@@ -45,7 +45,7 @@ class InquiryController extends Controller
     public function store(Request $request): RedirectResponse
     {
         // CAPTCHA verification
-        $site = Project::first();
+        $site = SiteSetting::current();
         if ($site && !CaptchaService::verify($site, $request)) {
             return back()->withInput()->withErrors(['captcha' => __('frontend.contact.captcha_error')]);
         }
@@ -95,9 +95,9 @@ class InquiryController extends Controller
         });
 
         try {
-            $site = Project::first();
+            $site = SiteSetting::current();
             if ($site?->contact_email) {
-                app(ProjectMailService::class)->send($site, $site->contact_email, new InquirySubmittedMail($order));
+                app(SiteMailService::class)->send($site, $site->contact_email, new InquirySubmittedMail($order));
             }
         } catch (\Throwable) {
             // SMTP not configured — silently ignore

@@ -1,6 +1,6 @@
 {{-- SEO Meta Tags Partial --}}
 @php
-    $site = $site ?? \App\Models\Project::first();
+    $site = $site ?? \App\Models\SiteSetting::current();
     $siteName = $site?->name ?? config('app.name', 'Laravel');
     
     // Meta title with fallback

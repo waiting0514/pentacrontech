@@ -1,10 +1,10 @@
 <script setup>
 import { ref, computed, getCurrentInstance, onMounted } from 'vue';
 import { aiService } from '../../../services';
-import { useProjectStore } from '../../store/modules/project';
+import { useSiteStore } from '../../store/modules/site';
 
 const { proxy } = getCurrentInstance();
-const projectStore = useProjectStore();
+const siteStore = useSiteStore();
 
 const messages = ref([]);
 const userMessage = ref('');
@@ -13,8 +13,8 @@ const isLoading = ref(false);
 const context = ref('product');
 
 onMounted(() => {
-    if (!projectStore.isAiEnabled) {
-        ElMessage.warning('AI features are disabled for this project.');
+    if (!siteStore.isAiEnabled) {
+        ElMessage.warning('AI features are disabled for this site.');
     }
 });
 

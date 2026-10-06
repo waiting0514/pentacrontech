@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('customer_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('order_number')->unique()->comment('INQ-YYYYMMDD-XXXX');
             $table->string('customer_name');
             $table->string('customer_email');

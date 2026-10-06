@@ -42,7 +42,6 @@ class KnowledgeArticleObserver
         $article->slug = $this->slugService->generateSlug(
             $title,
             'knowledge_articles',
-            $article->project_id,
             $article->id
         );
     }
@@ -62,8 +61,7 @@ class KnowledgeArticleObserver
 
     protected function slugExists(string $slug, KnowledgeArticle $article): bool
     {
-        $query = KnowledgeArticle::where('slug', $slug)
-            ->where('project_id', $article->project_id);
+        $query = KnowledgeArticle::where('slug', $slug);
 
         if ($article->id) {
             $query->where('id', '!=', $article->id);

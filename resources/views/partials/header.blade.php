@@ -1,6 +1,6 @@
 {{-- Site Header --}}
 @php
-    $site = $site ?? \App\Models\Project::first();
+    $site = $site ?? \App\Models\SiteSetting::current();
 @endphp
 
 <header x-data="{ mobileMenuOpen: false }" class="bg-white sticky top-0 z-50 border-b border-gray-100">

@@ -13,13 +13,12 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('category_id')->nullable()->constrained('product_categories')->onDelete('set null');
 
             // Content
             $table->json('name');           // {"zh-TW": "...", "en": "..."}
             $table->json('slug');           // {"zh-TW": "...", "en": "..."}
-            $table->json('description');    // {"zh-TW": "...", "en": "..."}
+            $table->json('description')->nullable(); // {"zh-TW": "...", "en": "..."}
             $table->text('specs')->nullable();
             $table->decimal('price', 10, 2);
             $table->boolean('is_inquiry_only')->default(false);

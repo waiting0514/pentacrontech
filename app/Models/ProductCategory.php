@@ -10,7 +10,6 @@ class ProductCategory extends Model
     use HasTranslations;
 
     protected $fillable = [
-        'project_id',
         'parent_id',
         'name',
         'slug',
@@ -60,12 +59,11 @@ class ProductCategory extends Model
     }
 
     /**
-     * Get the default "Uncategorized" category for a project.
+     * Get the default "Uncategorized" category.
      */
-    public static function getDefaultCategory(?int $projectId = null): ?self
+    public static function getDefaultCategory(): ?self
     {
-        return static::where('project_id', $projectId)
-            ->where('is_system', true)
+        return static::where('is_system', true)
             ->first();
     }
 

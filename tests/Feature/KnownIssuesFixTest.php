@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Project;
+use App\Models\SiteSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -15,7 +15,7 @@ class KnownIssuesFixTest extends TestCase
 {
     use RefreshDatabase;
 
-    private Project $project;
+    private SiteSetting $setting;
 
     protected function setUp(): void
     {
@@ -30,9 +30,8 @@ class KnownIssuesFixTest extends TestCase
         Role::create(['name' => 'editor', 'guard_name' => 'web'])
             ->syncPermissions(['product.view', 'product.update']);
 
-        $this->project = Project::create([
-            'name' => ['zh-TW' => '測試專案'],
-            'domain' => 'test.com',
+        $this->setting = SiteSetting::create([
+            'name' => ['zh-TW' => '測試網站'],
             'yearly_budget_twd' => 1000,
         ]);
     }
@@ -45,14 +44,13 @@ class KnownIssuesFixTest extends TestCase
         return $user;
     }
 
-    public function test_editor_cannot_update_or_delete_project(): void
+    public function test_editor_cannot_update_site_settings(): void
     {
         Sanctum::actingAs($this->userWithRole('editor'));
 
-        $this->putJson("/api/projects/{$this->project->id}", ['yearly_budget_twd' => 999999])
+        $this->putJson('/api/settings', ['yearly_budget_twd' => 999999])
             ->assertForbidden();
-        $this->deleteJson("/api/projects/{$this->project->id}")->assertForbidden();
-        $this->assertSame('1000.00', $this->project->fresh()->yearly_budget_twd);
+        $this->assertSame('1000.00', $this->setting->fresh()->yearly_budget_twd);
     }
 
     public function test_editor_cannot_read_usage_or_orders(): void
@@ -76,17 +74,17 @@ class KnownIssuesFixTest extends TestCase
     {
         Sanctum::actingAs($this->userWithRole('super-admin'));
 
-        $this->putJson("/api/projects/{$this->project->id}", [
+        $this->putJson('/api/settings', [
             'recaptcha_secret_key' => 'recaptcha-secret',
             'turnstile_secret_key' => 'turnstile-secret',
         ])->assertOk();
 
-        $raw = \DB::table('projects')->where('id', $this->project->id)->first();
+        $raw = \DB::table('site_settings')->first();
         $this->assertNotSame('recaptcha-secret', $raw->recaptcha_secret_key);
         $this->assertNotSame('turnstile-secret', $raw->turnstile_secret_key);
-        $this->assertSame('recaptcha-secret', $this->project->fresh()->recaptcha_secret_key);
+        $this->assertSame('recaptcha-secret', $this->setting->fresh()->recaptcha_secret_key);
 
-        $this->getJson('/api/projects/current')
+        $this->getJson('/api/settings')
             ->assertOk()
             ->assertJsonMissingPath('data.recaptcha_secret_key')
             ->assertJsonMissingPath('data.turnstile_secret_key')
@@ -94,8 +92,8 @@ class KnownIssuesFixTest extends TestCase
             ->assertJsonPath('data.has_turnstile_secret_key', true);
 
         // 留空不覆蓋既有金鑰
-        $this->putJson("/api/projects/{$this->project->id}", ['recaptcha_secret_key' => ''])->assertOk();
-        $this->assertSame('recaptcha-secret', $this->project->fresh()->recaptcha_secret_key);
+        $this->putJson('/api/settings', ['recaptcha_secret_key' => ''])->assertOk();
+        $this->assertSame('recaptcha-secret', $this->setting->fresh()->recaptcha_secret_key);
     }
 
     public function test_usage_statistics_total_cost_is_never_null(): void
@@ -104,7 +102,6 @@ class KnownIssuesFixTest extends TestCase
 
         \DB::table('ai_usage_logs')->insert([
             'user_id' => User::factory()->create()->id,
-            'project_id' => $this->project->id,
             'provider' => 'openai',
             'feature' => 'chat',
             'status' => 'success',
@@ -124,7 +121,7 @@ class KnownIssuesFixTest extends TestCase
 
     public function test_maintenance_mode_blocks_all_frontend_pages(): void
     {
-        $this->project->update(['maintenance_mode' => true]);
+        $this->setting->update(['maintenance_mode' => true]);
 
         $this->get('/products')->assertStatus(503);
         $this->get('/about')->assertStatus(503);
@@ -141,7 +138,7 @@ class KnownIssuesFixTest extends TestCase
 
     public function test_login_page_shows_site_name(): void
     {
-        $this->get('/login')->assertOk()->assertSee('測試專案');
+        $this->get('/login')->assertOk()->assertSee('測試網站');
     }
 
     public function test_rag_search_matches_zh_tw_name(): void

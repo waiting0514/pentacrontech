@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { usePermission } from '../../composables/usePermission';
-import { useProjectStore } from '../../store/modules/project';
+import { useSiteStore } from '../../store/modules/site';
 
 const props = defineProps({
     isCollapse: Boolean,
@@ -11,7 +11,7 @@ const props = defineProps({
 const route = useRoute();
 const router = useRouter();
 const { can } = usePermission();
-const projectStore = useProjectStore();
+const siteStore = useSiteStore();
 
 const activeMenu = computed(() => route.path);
 
@@ -25,7 +25,7 @@ const menuItems = computed(() => {
         if (item.path === 'ai-tools') return false;
 
         // Hide Usage if AI is disabled
-        if (!projectStore.isAiEnabled && item.path === 'usage') {
+        if (!siteStore.isAiEnabled && item.path === 'usage') {
             return false;
         }
 

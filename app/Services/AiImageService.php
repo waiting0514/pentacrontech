@@ -24,14 +24,14 @@ class AiImageService
      */
     public function parseDmImage(User $user, UploadedFile $image, ?string $locale = null): array
     {
-        // Get current project
-        $project = $this->costControl->getCurrentProject();
+        // Get site settings
+        $setting = $this->costControl->getSiteSetting();
         $targetLocale = $locale ?? app()->getLocale();
 
         $featurePrice = $this->costControl->getFeaturePrice('vision_parse');
 
-        if (!$this->costControl->checkBudget($project, $featurePrice)) {
-            throw new \Exception('Project budget exceeded');
+        if (!$this->costControl->checkBudget($setting, $featurePrice)) {
+            throw new \Exception('AI budget exceeded');
         }
 
         // Convert image to base64
@@ -72,7 +72,7 @@ class AiImageService
             // Calculate and record cost
             $cost = $this->costControl->calculateOpenAICost('gpt-4o', $inputTokens, $outputTokens);
             
-            $this->costControl->recordUsage($user, $project, [
+            $this->costControl->recordUsage($user, $setting, [
                 'provider' => 'openai',
                 'feature' => 'vision_parse',
                 'input_tokens' => $inputTokens,
@@ -82,12 +82,12 @@ class AiImageService
                 'status' => 'success',
             ]);
 
-            $this->costControl->incrementUsage($project, $featurePrice);
+            $this->costControl->incrementUsage($setting, $featurePrice);
 
             return json_decode($content, true);
 
         } catch (\Exception $e) {
-            $this->costControl->recordUsage($user, $project, [
+            $this->costControl->recordUsage($user, $setting, [
                 'provider' => 'openai',
                 'feature' => 'vision_parse',
                 'input_tokens' => 0,
@@ -113,14 +113,14 @@ class AiImageService
      */
     public function parseMultipleImages(User $user, array $images, ?string $locale = null): array
     {
-        $project = $this->costControl->getCurrentProject();
+        $setting = $this->costControl->getSiteSetting();
         $targetLocale = $locale ?? app()->getLocale();
         $imageCount = count($images);
 
         $featurePrice = $this->costControl->getFeaturePrice('vision_parse_multi');
 
-        if (!$this->costControl->checkBudget($project, $featurePrice)) {
-            throw new \Exception('Project budget exceeded');
+        if (!$this->costControl->checkBudget($setting, $featurePrice)) {
+            throw new \Exception('AI budget exceeded');
         }
 
         // Build image content array for GPT-4o Vision
@@ -163,7 +163,7 @@ class AiImageService
 
             $cost = $this->costControl->calculateOpenAICost('gpt-4o', $inputTokens, $outputTokens);
 
-            $this->costControl->recordUsage($user, $project, [
+            $this->costControl->recordUsage($user, $setting, [
                 'provider' => 'openai',
                 'feature' => 'vision_parse_multi',
                 'input_tokens' => $inputTokens,
@@ -173,7 +173,7 @@ class AiImageService
                 'status' => 'success',
             ]);
 
-            $this->costControl->incrementUsage($project, $featurePrice);
+            $this->costControl->incrementUsage($setting, $featurePrice);
 
             $parsedData = json_decode($content, true);
 
@@ -188,7 +188,7 @@ class AiImageService
             ];
 
         } catch (\Exception $e) {
-            $this->costControl->recordUsage($user, $project, [
+            $this->costControl->recordUsage($user, $setting, [
                 'provider' => 'openai',
                 'feature' => 'vision_parse_multi',
                 'input_tokens' => 0,
@@ -212,13 +212,13 @@ class AiImageService
      */
     public function removeBackground(User $user, UploadedFile $image): string
     {
-        // Get current project
-        $project = $this->costControl->getCurrentProject();
+        // Get site settings
+        $setting = $this->costControl->getSiteSetting();
 
         $featurePrice = $this->costControl->getFeaturePrice('remove_bg');
 
-        if (!$this->costControl->checkBudget($project, $featurePrice)) {
-            throw new \Exception('Project budget exceeded');
+        if (!$this->costControl->checkBudget($setting, $featurePrice)) {
+            throw new \Exception('AI budget exceeded');
         }
 
         $apiKey = config('services.clipdrop.api_key');
@@ -241,7 +241,7 @@ class AiImageService
 
             $cost = $this->costControl->estimateImageCost('clipdrop');
 
-            $this->costControl->recordUsage($user, $project, [
+            $this->costControl->recordUsage($user, $setting, [
                 'provider' => 'clipdrop',
                 'feature' => 'remove_bg',
                 'input_tokens' => null,
@@ -251,12 +251,12 @@ class AiImageService
                 'status' => 'success',
             ]);
 
-            $this->costControl->incrementUsage($project, $featurePrice);
+            $this->costControl->incrementUsage($setting, $featurePrice);
 
             return Storage::url('images/' . $filename);
 
         } catch (\Exception $e) {
-            $this->costControl->recordUsage($user, $project, [
+            $this->costControl->recordUsage($user, $setting, [
                 'provider' => 'clipdrop',
                 'feature' => 'remove_bg',
                 'input_tokens' => null,
@@ -281,13 +281,13 @@ class AiImageService
      */
     public function generateScene(User $user, UploadedFile $image, string $prompt): string
     {
-        // Get current project
-        $project = $this->costControl->getCurrentProject();
+        // Get site settings
+        $setting = $this->costControl->getSiteSetting();
 
         $featurePrice = $this->costControl->getFeaturePrice('scene_gen');
 
-        if (!$this->costControl->checkBudget($project, $featurePrice)) {
-            throw new \Exception('Project budget exceeded');
+        if (!$this->costControl->checkBudget($setting, $featurePrice)) {
+            throw new \Exception('AI budget exceeded');
         }
 
         $apiKey = config('services.photoroom.api_key');
@@ -312,7 +312,7 @@ class AiImageService
 
             $cost = $this->costControl->estimateImageCost('photoroom');
 
-            $this->costControl->recordUsage($user, $project, [
+            $this->costControl->recordUsage($user, $setting, [
                 'provider' => 'photoroom',
                 'feature' => 'scene_gen',
                 'input_tokens' => null,
@@ -322,12 +322,12 @@ class AiImageService
                 'status' => 'success',
             ]);
 
-            $this->costControl->incrementUsage($project, $featurePrice);
+            $this->costControl->incrementUsage($setting, $featurePrice);
 
             return Storage::url('images/' . $filename);
 
         } catch (\Exception $e) {
-            $this->costControl->recordUsage($user, $project, [
+            $this->costControl->recordUsage($user, $setting, [
                 'provider' => 'photoroom',
                 'feature' => 'scene_gen',
                 'input_tokens' => null,
