@@ -1,137 +1,95 @@
-{{-- Site Header --}}
+{{-- Site Header: transparent over the homepage hero, solid navy elsewhere / when scrolled --}}
 @php
     $site = $site ?? \App\Models\SiteSetting::current();
+    $isHome = str_starts_with((string) request()->route()?->getName(), 'home');
+    $navCategories = \App\Models\ProductCategory::where('is_active', true)->orderBy('sort_order')->take(3)->get();
+
+    $is = fn (string ...$p) => request()->is(...$p);
+    $nav = [
+        ['key' => 'products', 'url' => lroute('products.index'), 'on' => $is('products*', '*/products*', 'category/*', '*/category/*'), 'en' => 'Products'],
+        ['key' => 'solutions', 'url' => lroute('home') . '#solutions', 'on' => false, 'en' => 'Solutions'],
+        ['key' => 'applications', 'url' => lroute('home') . '#applications', 'on' => false, 'en' => 'Applications'],
+        ['key' => 'technology', 'url' => lroute('knowledge.index'), 'on' => $is('knowledge*', '*/knowledge*'), 'en' => 'Technology'],
+        ['key' => 'about', 'url' => lroute('about'), 'on' => $is('about*', '*/about*'), 'en' => 'About'],
+        ['key' => 'news', 'url' => lroute('news.index'), 'on' => $is('news*', '*/news*'), 'en' => 'News'],
+    ];
 @endphp
 
-<header x-data="{ mobileMenuOpen: false }" class="bg-white sticky top-0 z-50 border-b border-gray-100">
-    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            {{-- Logo --}}
-            <div class="flex items-center">
-                <a href="{{ lroute('home') }}" class="flex items-center">
-                    @if($site?->logo_url)
-                        <img src="{{ $site->logo_url }}" alt="{{ $site->name }}" style="height: 60px; width: auto;">
-                    @else
-                        <span class="text-xl font-bold text-gray-900 tracking-tight">{{ $site?->name ?? config('app.name') }}</span>
-                    @endif
-                </a>
+<header x-data="{ open: false, sub: false, scrolled: false }"
+        x-init="scrolled = window.scrollY > 8"
+        @scroll.window.passive="scrolled = window.scrollY > 8"
+        @keydown.escape.window="if (open) { open = false; $nextTick(() => $refs.burger.focus()) }"
+        x-effect="document.body.style.overflow = open ? 'hidden' : ''"
+        class="ix-hdr {{ $isHome ? 'is-over' : 'is-static' }}"
+        :class="{ 'is-solid': scrolled }">
+    <div class="ix-wrap ix-hdr-row">
+        <a class="ix-logo" href="{{ lroute('home') }}" aria-label="{{ $site?->name ?? config('app.name') }}">
+            @if($site?->logo_url)
+                <img src="{{ $site->logo_url }}" alt="{{ $site->name }}" style="height: 40px; width: auto;">
+            @else
+                <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true"><path d="M15 2 27 9v12l-12 7L3 21V9z" stroke="currentColor" stroke-width="1.6"/><path d="M15 9.5 21 13v6l-6 3.5L9 19v-6z" fill="#168BD2"/></svg>
+                <span>{{ $site?->name ?? config('app.name') }}</span>
+            @endif
+        </a>
+
+        <nav class="ix-nav" aria-label="{{ __('frontend.nav.main') }}">
+            @foreach($nav as $item)
+                <a href="{{ $item['url'] }}" @class(['on' => $item['on']]) @if($item['on']) aria-current="page" @endif>{{ __('frontend.nav.' . $item['key']) }}</a>
+            @endforeach
+        </nav>
+
+        <div class="ix-hdr-r">
+            <x-lang-switcher />
+            <a href="{{ lroute('contact') }}" class="ix-btn ix-btn-p ix-btn-sm">{{ __('frontend.nav.quote') }}</a>
+            <button type="button" class="ix-burger" x-ref="burger" @click="open = true; sub = false"
+                    aria-label="{{ __('frontend.nav.open_menu') }}" :aria-expanded="open.toString()" aria-controls="ix-drawer">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 6h16M2 14h16"/></svg>
+            </button>
+        </div>
+    </div>
+
+    {{-- Mobile drawer --}}
+    <div id="ix-drawer" class="ix-drawer" x-show="open" x-cloak x-transition.opacity role="dialog" aria-modal="true" aria-label="{{ __('frontend.nav.main') }}">
+        <div style="height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 12px 0 20px;border-bottom:1px solid #1C3550;flex:none">
+            <span class="ix-logo" style="font-size:17px">
+                <svg width="26" height="26" viewBox="0 0 30 30" fill="none" aria-hidden="true"><path d="M15 2 27 9v12l-12 7L3 21V9z" stroke="currentColor" stroke-width="1.6"/><path d="M15 9.5 21 13v6l-6 3.5L9 19v-6z" fill="#168BD2"/></svg>
+                {{ $site?->name ?? config('app.name') }}
+            </span>
+            <button type="button" @click="open = false; $nextTick(() => $refs.burger.focus())" aria-label="{{ __('frontend.nav.close_menu') }}"
+                    style="width:48px;height:48px;border:1px solid #2A4560;background:transparent;color:#fff;display:inline-flex;align-items:center;justify-content:center;border-radius:2px">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 3l12 12M15 3 3 15"/></svg>
+            </button>
+        </div>
+
+        <nav style="flex:1;overflow-y:auto" aria-label="{{ __('frontend.nav.main') }}">
+            <button type="button" class="ix-drawer-it" @click="sub = !sub" :aria-expanded="sub.toString()" style="box-shadow: inset 3px 0 0 #168BD2">
+                <span>{{ __('frontend.nav.products') }}<span class="en">Products</span></span>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#5AB4EC" stroke-width="1.5" :style="sub ? 'transform: rotate(180deg)' : ''" aria-hidden="true"><path d="M3 5l4 4 4-4"/></svg>
+            </button>
+            <div class="ix-drawer-sub" x-show="sub" x-cloak style="background:#0A2238">
+                @foreach($navCategories as $cat)
+                    <a href="{{ lroute('category.show', ['slug' => $cat->slug ?: (collect($cat->getTranslations('slug'))->first() ?: 'category')]) }}">{{ $cat->name }}</a>
+                @endforeach
+                <a href="{{ lroute('products.index') }}" style="color:#5AB4EC">{{ __('frontend.nav.all_products') }} →</a>
             </div>
+            @foreach(array_slice($nav, 1) as $item)
+                <a href="{{ $item['url'] }}" class="ix-drawer-it" @click="open = false"><span>{{ __('frontend.nav.' . $item['key']) }}<span class="en">{{ $item['en'] }}</span></span></a>
+            @endforeach
+        </nav>
 
-            {{-- Desktop Navigation --}}
-            <div class="hidden md:flex items-center space-x-8">
-                <a href="{{ lroute('home') }}" class="@if(request()->is('/') || request()->is('{locale}')) text-[#BE185D] font-semibold @else text-gray-600 hover:text-gray-900 font-medium @endif text-sm transition">
-                    {{ __('frontend.nav.home') }}
-                </a>
-                <a href="{{ lroute('products.index') }}" class="@if(request()->is('products*') || request()->is('{locale}/products*') || request()->is('category/*')) text-[#BE185D] font-semibold @else text-gray-600 hover:text-gray-900 font-medium @endif text-sm transition">
-                    {{ __('frontend.nav.products') }}
-                </a>
-                <a href="{{ lroute('news.index') }}" class="@if(request()->is('news*') || request()->is('{locale}/news*')) text-[#BE185D] font-semibold @else text-gray-600 hover:text-gray-900 font-medium @endif text-sm transition">
-                    {{ __('frontend.nav.news') }}
-                </a>
-                <a href="{{ lroute('knowledge.index') }}" class="@if(request()->is('knowledge*') || request()->is('{locale}/knowledge*')) text-[#BE185D] font-semibold @else text-gray-600 hover:text-gray-900 font-medium @endif text-sm transition">
-                    {{ __('frontend.nav.knowledge') }}
-                </a>
-                <a href="{{ lroute('about') }}" class="@if(request()->is('about*') || request()->is('{locale}/about')) text-[#BE185D] font-semibold @else text-gray-600 hover:text-gray-900 font-medium @endif text-sm transition">
-                    {{ __('frontend.nav.about') }}
-                </a>
-                <a href="{{ lroute('contact') }}" class="@if(request()->is('contact*') || request()->is('{locale}/contact')) text-[#BE185D] font-semibold @else text-gray-600 hover:text-gray-900 font-medium @endif text-sm transition">
-                    {{ __('frontend.nav.contact') }}
-                </a>
-
-                {{-- Inquiry Cart --}}
-                @if(false)
-                <a href="{{ lroute('inquiry.index') }}" class="relative text-gray-500 hover:text-[#BE185D] transition" title="{{ __('frontend.inquiry.title') }}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                    </svg>
-                    <span x-show="$store.cart.totalCount() > 0" x-cloak
-                          x-text="$store.cart.totalCount()"
-                          class="absolute -top-2 -right-2 bg-[#BE185D] text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center" style="font-size: 10px;"></span>
-                </a>
-                @endif
-
-                {{-- Customer Auth --}}
+        <div style="padding:20px;border-top:1px solid #1C3550;display:flex;flex-direction:column;gap:16px;flex:none">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <x-lang-switcher />
                 @auth
-                    <div x-data="{ open: false }" class="relative">
-                        <button @click="open = !open" class="flex items-center gap-1.5 text-gray-500 hover:text-gray-900 transition text-sm font-medium">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                            </svg>
-                            {{ Str::limit(auth()->user()->name, 10) }}
-                        </button>
-                        <div x-show="open" x-cloak @click.outside="open = false"
-                             class="absolute right-0 mt-2 w-44 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50">
-                            <a href="{{ route('account.show') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-[#BE185D] hover:bg-pink-50">{{ __('frontend.account.title') }}</a>
-                            <a href="{{ route('account.orders.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-[#BE185D] hover:bg-pink-50">{{ __('frontend.account.orders') }}</a>
-                            <div class="border-t border-gray-100 my-1"></div>
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-600 hover:text-[#BE185D] hover:bg-pink-50">{{ __('frontend.auth.logout') }}</button>
-                            </form>
-                        </div>
-                    </div>
+                    <a href="{{ route('account.show') }}" style="color:#A9B6C4;font-size:14px;text-decoration:none;padding:12px 0">{{ __('frontend.account.title') }}</a>
                 @else
-                    <a href="{{ route('login') }}" class="text-gray-500 hover:text-gray-900 transition text-sm font-medium">{{ __('frontend.auth.login') }}</a>
+                    <a href="{{ route('login') }}" style="color:#A9B6C4;font-size:14px;text-decoration:none;padding:12px 0">{{ __('frontend.auth.login') }}</a>
                 @endauth
-
-                {{-- Language Switcher --}}
-                <div class="ml-2">
-                    <x-lang-switcher />
-                </div>
             </div>
-
-            {{-- Mobile menu button --}}
-            <div class="md:hidden flex items-center gap-3">
-                {{-- Mobile Cart --}}
-                @if(false)
-                <a href="{{ lroute('inquiry.index') }}" class="relative text-gray-500 hover:text-[#BE185D] transition">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                    </svg>
-                    <span x-show="$store.cart.totalCount() > 0" x-cloak
-                          x-text="$store.cart.totalCount()"
-                          class="absolute -top-2 -right-2 bg-[#BE185D] text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center" style="font-size: 10px;"></span>
-                </a>
-                @endif
-                <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-500 hover:text-gray-900 p-2">
-                    <svg x-show="!mobileMenuOpen" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
-                    <svg x-show="mobileMenuOpen" x-cloak class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
+            <a href="{{ lroute('contact') }}" class="ix-btn ix-btn-p" style="min-height:56px;font-size:16px">
+                {{ __('frontend.nav.quote') }}
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+            </a>
         </div>
-
-        {{-- Mobile Navigation --}}
-        <div x-show="mobileMenuOpen" x-cloak x-transition class="md:hidden pb-4 border-t border-gray-100">
-            <div class="flex flex-col space-y-1 pt-4">
-                <a href="{{ lroute('home') }}" class="@if(request()->is('/') || request()->is('{locale}')) text-[#BE185D] bg-pink-50 @else text-gray-600 hover:text-gray-900 hover:bg-gray-50 @endif px-4 py-2.5 rounded-lg font-medium text-sm transition">{{ __('frontend.nav.home') }}</a>
-                <a href="{{ lroute('products.index') }}" class="@if(request()->is('products*') || request()->is('{locale}/products*') || request()->is('category/*')) text-[#BE185D] bg-pink-50 @else text-gray-600 hover:text-gray-900 hover:bg-gray-50 @endif px-4 py-2.5 rounded-lg font-medium text-sm transition">{{ __('frontend.nav.products') }}</a>
-                <a href="{{ lroute('news.index') }}" class="@if(request()->is('news*') || request()->is('{locale}/news*')) text-[#BE185D] bg-pink-50 @else text-gray-600 hover:text-gray-900 hover:bg-gray-50 @endif px-4 py-2.5 rounded-lg font-medium text-sm transition">{{ __('frontend.nav.news') }}</a>
-                <a href="{{ lroute('knowledge.index') }}" class="@if(request()->is('knowledge*') || request()->is('{locale}/knowledge*')) text-[#BE185D] bg-pink-50 @else text-gray-600 hover:text-gray-900 hover:bg-gray-50 @endif px-4 py-2.5 rounded-lg font-medium text-sm transition">{{ __('frontend.nav.knowledge') }}</a>
-                <a href="{{ lroute('about') }}" class="@if(request()->is('about*') || request()->is('{locale}/about')) text-[#BE185D] bg-pink-50 @else text-gray-600 hover:text-gray-900 hover:bg-gray-50 @endif px-4 py-2.5 rounded-lg font-medium text-sm transition">{{ __('frontend.nav.about') }}</a>
-                <a href="{{ lroute('contact') }}" class="@if(request()->is('contact*') || request()->is('{locale}/contact')) text-[#BE185D] bg-pink-50 @else text-gray-600 hover:text-gray-900 hover:bg-gray-50 @endif px-4 py-2.5 rounded-lg font-medium text-sm transition">{{ __('frontend.nav.contact') }}</a>
-
-                {{-- Mobile Customer Auth --}}
-                <div class="pt-2 mt-2 border-t border-gray-100">
-                    @auth
-                        <a href="{{ route('account.show') }}" class="block text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-4 py-2.5 rounded-lg text-sm font-medium">{{ __('frontend.account.title') }}</a>
-                        <a href="{{ route('account.orders.index') }}" class="block text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-4 py-2.5 rounded-lg text-sm font-medium">{{ __('frontend.account.orders') }}</a>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="w-full text-left text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-4 py-2.5 rounded-lg text-sm font-medium">{{ __('frontend.auth.logout') }}</button>
-                        </form>
-                    @else
-                        <a href="{{ route('login') }}" class="block text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-4 py-2.5 rounded-lg text-sm font-medium">{{ __('frontend.auth.login') }}</a>
-                        <a href="{{ route('register') }}" class="block text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-4 py-2.5 rounded-lg text-sm font-medium">{{ __('frontend.auth.register') }}</a>
-                    @endauth
-                </div>
-                <div class="pt-2 border-t border-gray-100 px-4">
-                    <x-lang-switcher />
-                </div>
-            </div>
-        </div>
-    </nav>
+    </div>
 </header>

@@ -9,18 +9,14 @@
 <style>
     .page-hero {
         position: relative;
-        min-height: 40vh;
-        display: flex;
-        align-items: center;
         overflow: hidden;
-        background: #0c0a09;
-    }
-    .page-hero::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, rgba(12,10,9,0.25) 0%, rgba(12,10,9,0.65) 100%);
-        z-index: 1;
+        background-color: var(--color-navy);
+        background-image:
+            linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+        background-size: 48px 48px;
+        color: #fff;
+        padding: clamp(72px, 9vw, 120px) 0 clamp(56px, 7vw, 96px);
     }
     .page-hero-img {
         position: absolute;
@@ -33,6 +29,12 @@
         object-fit: cover;
         will-change: transform;
         transition: transform 0.1s linear;
+    }
+    .page-hero-scrim {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background: linear-gradient(90deg, rgba(7,26,43,.97) 0%, rgba(7,26,43,.82) 45%, rgba(7,26,43,.5) 100%);
     }
 </style>
 @endpush
@@ -55,20 +57,17 @@
 @endpush
 @endonce
 
-<section class="page-hero">
+<section class="page-hero ix-dark">
     @if($image)
     <img src="{{ $image }}" alt="" class="page-hero-img" data-page-hero-img loading="eager">
+    <div class="page-hero-scrim"></div>
     @endif
-    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div class="max-w-2xl">
-            <div class="w-14 h-0.5 bg-[#BE185D] mb-6"></div>
-            <h1 class="text-4xl sm:text-5xl md:text-6xl font-black text-white leading-tight mb-4 tracking-tight">
-                {{ $title }}
-            </h1>
+    <div class="ix-wrap relative z-10 w-full">
+        <div class="max-w-3xl flex flex-col gap-6">
+            <p class="ix-eyebrow"><b>{{ \App\Models\SiteSetting::current()?->name ?? config('app.name') }}</b></p>
+            <h1 class="ix-d-lg">{{ $title }}</h1>
             @if($subtitle)
-            <p class="text-lg md:text-xl text-gray-300 leading-relaxed">
-                {{ $subtitle }}
-            </p>
+            <p class="ix-body-lg ix-muted">{{ $subtitle }}</p>
             @endif
         </div>
     </div>

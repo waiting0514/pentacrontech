@@ -2,35 +2,35 @@
 
 @section('content')
 {{-- Breadcrumb --}}
-<nav class="bg-gray-100 border-b border-gray-200 py-3">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ol class="flex items-center space-x-2 text-sm">
-            <li><a href="{{ lroute('home') }}" class="text-gray-500 hover:text-[#BE185D] transition">{{ __('frontend.common.home') }}</a></li>
-            <li class="text-gray-300">/</li>
-            <li><a href="{{ lroute('knowledge.index') }}" class="text-gray-500 hover:text-[#BE185D] transition">{{ __('frontend.knowledge.title') }}</a></li>
+<nav class="bg-lsteel border-b border-line py-3">
+    <div class="ix-wrap">
+        <ol class="flex flex-wrap items-center gap-x-2 font-mono text-xs uppercase tracking-wider">
+            <li><a href="{{ lroute('home') }}" class="text-steel hover:text-eblue transition">{{ __('frontend.common.home') }}</a></li>
+            <li class="text-line">/</li>
+            <li><a href="{{ lroute('knowledge.index') }}" class="text-steel hover:text-eblue transition">{{ __('frontend.knowledge.title') }}</a></li>
             @if($article->category)
-            <li class="text-gray-300">/</li>
+            <li class="text-line">/</li>
             <li><a href="{{ lroute('knowledge.category', ['categorySlug' => $article->category->slug]) }}"
-                   class="text-gray-500 hover:text-[#BE185D] transition">{{ $article->category->name }}</a></li>
+                   class="text-steel hover:text-eblue transition">{{ $article->category->name }}</a></li>
             @endif
-            <li class="text-gray-300">/</li>
-            <li class="text-[#1a1a1a] font-bold line-clamp-1">{{ $article->title }}</li>
+            <li class="text-line">/</li>
+            <li class="text-ink font-medium line-clamp-1">{{ $article->title }}</li>
         </ol>
     </div>
 </nav>
 
-<article class="py-12 md:py-16">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+<article class="py-12 md:py-20 bg-white">
+    <div class="max-w-4xl mx-auto px-5 sm:px-8">
         {{-- Article Header --}}
-        <header class="mb-8">
-            <div class="flex items-center gap-3 flex-wrap mb-4">
+        <header class="mb-10">
+            <div class="flex items-center gap-3 flex-wrap mb-5 font-mono text-xs uppercase tracking-wider">
                 @if($article->category)
                 <a href="{{ lroute('knowledge.category', ['categorySlug' => $article->category->slug]) }}"
-                   class="px-3 py-1 bg-pink-50 text-[#BE185D] rounded-full font-semibold text-xs hover:bg-pink-100 transition">
+                   class="px-3 py-1 bg-lsteel text-eblue rounded-sm font-medium hover:bg-eblue hover:text-white transition">
                     {{ $article->category->name }}
                 </a>
                 @endif
-                <span class="text-xs px-2.5 py-1 bg-gray-100 text-gray-500 rounded-full font-medium">
+                <span class="px-2.5 py-1 border border-line text-muted rounded-sm">
                     {{ match($article->schema_type) {
                         'faq' => 'FAQ',
                         'howto' => 'How-To',
@@ -39,15 +39,14 @@
                     } }}
                 </span>
                 @if($article->reading_time)
-                <span class="text-sm text-gray-400">{{ $article->reading_time }} min read</span>
+                <span class="text-muted">{{ $article->reading_time }} min read</span>
                 @endif
             </div>
-            <div class="w-12 h-1 bg-[#BE185D] mb-4"></div>
-            <h1 class="text-3xl md:text-4xl font-black text-[#1a1a1a] tracking-tight">
+            <h1 class="ix-d-md text-ink" style="text-transform: none;">
                 {{ $article->title }}
             </h1>
             @if($article->excerpt)
-            <p class="mt-4 text-xl text-gray-600 leading-relaxed">{{ $article->excerpt }}</p>
+            <p class="mt-5 ix-body-lg text-steel">{{ $article->excerpt }}</p>
             @endif
         </header>
 
@@ -56,7 +55,7 @@
         <figure class="mb-8">
             <img src="{{ $article->image_url }}"
                  alt="{{ $article->meta_keywords ?? $article->title }}"
-                 class="w-full h-auto rounded-lg border border-gray-200"
+                 class="w-full h-auto border border-line" style="border-radius: 2px;"
                  width="800"
                  height="450">
         </figure>
@@ -70,12 +69,12 @@
 
     {{-- Related Articles --}}
     @if($relatedArticles->count() > 0)
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 pt-16 border-t border-gray-200">
-        <h2 class="text-2xl font-black text-[#1a1a1a] mb-8">{{ __('frontend.knowledge.related') }}</h2>
+    <section class="ix-wrap mt-16 pt-16 border-t border-line">
+        <h2 class="ix-d-md text-ink mb-8">{{ __('frontend.knowledge.related') }}</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             @foreach($relatedArticles as $related)
             <a href="{{ lroute('knowledge.show', ['categorySlug' => ($related->category?->slug ?: 'general'), 'id' => $related->id, 'slug' => ($related->slug ?: 'article')]) }}"
-               class="ind-card rounded-lg overflow-hidden">
+               class="ind-card">
                 @if($related->image_url)
                 <img src="{{ $related->image_url }}"
                      alt="{{ $related->title }}"
@@ -84,11 +83,11 @@
                 @endif
                 <div class="p-4">
                     @if($related->reading_time)
-                    <span class="text-xs text-gray-400">{{ $related->reading_time }} min read</span>
+                    <span class="ix-n-meta">{{ $related->reading_time }} min read</span>
                     @endif
-                    <h3 class="font-bold text-[#1a1a1a] mt-1 line-clamp-2">{{ $related->title }}</h3>
+                    <h3 class="ix-n-t text-ink mt-2 line-clamp-2">{{ $related->title }}</h3>
                     @if($related->excerpt)
-                    <p class="text-sm text-gray-500 mt-1 line-clamp-2">{{ $related->excerpt }}</p>
+                    <p class="text-sm text-steel mt-1 line-clamp-2">{{ $related->excerpt }}</p>
                     @endif
                 </div>
             </a>

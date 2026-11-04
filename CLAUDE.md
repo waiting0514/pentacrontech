@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Communication
+
+- 回覆與說明一律使用**繁體中文**（程式碼、指令、檔名、識別字維持原文）。
+
 ## Development Environment
 
 This project uses **Laravel Sail** (Docker). All commands must run through Sail:

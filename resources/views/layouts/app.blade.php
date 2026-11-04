@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     {{-- Fonts --}}
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Noto+Sans+TC:wght@400;500;700;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 
     {{-- Styles --}}
     @vite(['resources/css/app.css'])
@@ -26,9 +26,9 @@
     {{-- JSON-LD Structured Data --}}
     @stack('schema')
 </head>
-<body class="font-sans antialiased bg-white text-gray-800">
+<body class="font-sans antialiased bg-white text-ink flex min-h-screen flex-col">
     {{-- Skip to main content for accessibility --}}
-    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 ind-btn px-4 py-2 rounded">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[70] ind-btn px-4 py-2">
         跳至主要內容
     </a>
 
@@ -36,7 +36,7 @@
     @include('partials.header')
 
     {{-- Main Content --}}
-    <main id="main-content">
+    <main id="main-content" class="flex-1">
         @yield('content')
     </main>
 

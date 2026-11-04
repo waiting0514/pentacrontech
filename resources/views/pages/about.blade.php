@@ -1,23 +1,19 @@
 @extends('layouts.app')
 
 @push('head')
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;0,900;1,400;1,500;1,700&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
 <style>
-    /* ===== About Page Scoped Styles ===== */
-    .about-serif { font-family: 'Playfair Display', Georgia, serif; }
-    .about-sans { font-family: 'DM Sans', 'Inter', system-ui, sans-serif; }
+    /* ===== About Page Scoped Styles (Industrial Blue) ===== */
+    .about-serif { font-family: var(--font-display); font-weight: 800; font-stretch: 108%; text-transform: uppercase; letter-spacing: -.01em; }
+    .about-sans { font-family: var(--font-sans); }
 
     /* Scroll reveal */
     .reveal {
         opacity: 0;
-        transform: translateY(40px);
-        transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
-                    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+        transform: translateY(24px);
+        transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .reveal.visible {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
     .reveal-delay-1 { transition-delay: 0.1s; }
     .reveal-delay-2 { transition-delay: 0.2s; }
     .reveal-delay-3 { transition-delay: 0.3s; }
@@ -30,169 +26,104 @@
         display: flex;
         align-items: center;
         overflow: hidden;
-        background: #0c0a09;
+        background: var(--color-navy);
+        padding: 96px 0 64px;
     }
     .about-hero::after {
         content: '';
         position: absolute;
         inset: 0;
-        background: linear-gradient(180deg, rgba(12,10,9,0.3) 0%, rgba(12,10,9,0.7) 100%);
+        background: linear-gradient(90deg, rgba(7,26,43,.95) 0%, rgba(7,26,43,.75) 45%, rgba(7,26,43,.3) 100%);
         z-index: 1;
     }
     .about-hero-img {
         position: absolute;
         inset: -10%;
         width: 120%;
+        max-width: none;
         height: 120%;
         object-fit: cover;
         will-change: transform;
     }
 
-    /* Decorative line */
-    .line-accent {
-        width: 60px;
-        height: 2px;
-        background: #BE185D;
-        display: block;
-    }
-
-    /* Stat counter */
-    .stat-number {
-        font-family: 'Playfair Display', serif;
-        font-weight: 900;
-        font-style: italic;
-        line-height: 1;
-        background: linear-gradient(135deg, #BE185D 0%, #9D174D 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
     /* Editorial quote block */
     .editorial-quote {
         position: relative;
-        padding-left: 2rem;
-        border-left: 3px solid #BE185D;
-    }
-    .editorial-quote::before {
-        content: '\201C';
-        font-family: 'Playfair Display', serif;
-        font-size: 5rem;
-        line-height: 0;
-        position: absolute;
-        top: 2.5rem;
-        left: -0.25rem;
-        color: #BE185D;
-        opacity: 0.15;
+        padding-left: 1.5rem;
+        border-left: 2px solid var(--color-eblue);
     }
 
-    /* Values card hover lift */
+    /* Values card */
     .value-card {
         position: relative;
-        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        border-radius: 2px;
+        transition: border-color .25s;
     }
     .value-card::before {
         content: '';
         position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #BE185D, #F472B6);
+        bottom: 0; left: 0; right: 0;
+        height: 2px;
+        background: var(--color-pblue);
         transform: scaleX(0);
         transform-origin: left;
-        transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .value-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.1);
-    }
-    .value-card:hover::before {
-        transform: scaleX(1);
-    }
+    .value-card:hover { border-color: var(--color-eblue); }
+    .value-card:hover::before { transform: scaleX(1); }
+    .value-icon { width: 48px; height: 48px; background: var(--color-eblue); border-radius: 2px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
 
-    /* Grain overlay for textured sections */
-    .grain::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        opacity: 0.03;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-        pointer-events: none;
-        z-index: 0;
-    }
-
-    /* Image overlay gradient */
-    .img-overlay {
-        position: relative;
-        overflow: hidden;
-        border-radius: 1rem;
-    }
+    /* Image overlay */
+    .img-overlay { position: relative; overflow: hidden; border-radius: 2px; }
     .img-overlay::after {
         content: '';
         position: absolute;
         inset: 0;
-        background: linear-gradient(180deg, transparent 50%, rgba(12,10,9,0.25) 100%);
+        background: linear-gradient(180deg, transparent 50%, rgba(7,26,43,0.25) 100%);
         pointer-events: none;
-        border-radius: 1rem;
     }
 
-    /* Why-us feature ring */
-    .feature-ring {
-        position: relative;
-    }
-    .feature-ring::before {
-        content: '';
-        position: absolute;
-        inset: -4px;
-        border-radius: 1rem;
-        background: linear-gradient(135deg, #BE185D, #F9A8D4, #BE185D);
-        opacity: 0;
-        transition: opacity 0.4s ease;
-        z-index: -1;
-    }
-    .feature-ring:hover::before {
-        opacity: 1;
-    }
+    /* Why-us feature box */
+    .feature-ring { border: 1px solid var(--color-line); border-radius: 2px; transition: border-color .25s; }
+    .feature-ring:hover { border-color: var(--color-eblue); }
+    .feature-ico { width: 56px; height: 56px; background: #fff; border: 1px solid var(--color-line); border-radius: 2px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
 
-    /* CTA section mesh */
+    /* CTA section */
     .cta-mesh {
         background:
-            radial-gradient(ellipse at 20% 50%, rgba(190,24,93,0.15) 0%, transparent 50%),
-            radial-gradient(ellipse at 80% 50%, rgba(157,23,77,0.1) 0%, transparent 50%),
-            #0c0a09;
+            radial-gradient(ellipse at 20% 50%, rgba(22,139,210,0.18) 0%, transparent 55%),
+            var(--color-deep);
     }
 </style>
 @endpush
 
 @section('content')
 {{-- Breadcrumb --}}
-<nav class="bg-white border-b border-gray-100 py-3">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ol class="flex items-center space-x-2 text-sm about-sans">
-            <li><a href="{{ lroute('home') }}" class="text-gray-400 hover:text-[#BE185D] transition">{{ __('frontend.common.home') }}</a></li>
-            <li class="text-gray-300">/</li>
-            <li class="text-gray-900 font-medium">{{ __('frontend.about.title') }}</li>
+<nav class="bg-white border-b border-line py-3">
+    <div class="ix-wrap">
+        <ol class="flex items-center space-x-2 text-sm font-mono">
+            <li><a href="{{ lroute('home') }}" class="text-steel hover:text-eblue transition">{{ __('frontend.common.home') }}</a></li>
+            <li class="text-line">/</li>
+            <li class="text-ink font-medium">{{ __('frontend.about.title') }}</li>
         </ol>
     </div>
 </nav>
 
 {{-- ============================================ --}}
-{{-- HERO — Cinematic full-bleed --}}
+{{-- HERO --}}
 {{-- ============================================ --}}
 <section class="about-hero">
     <img src="{{ asset('images/about-hero.png') }}"
          alt="" class="about-hero-img" id="heroImg" loading="eager">
-    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+    <div class="relative z-10 ix-wrap w-full ix-dark">
         <div class="max-w-3xl">
-            <span class="line-accent mb-8 reveal"></span>
-            <p class="about-sans text-[#F9A8D4] text-sm font-medium tracking-[0.25em] uppercase mb-6 reveal reveal-delay-1">
-                {{ __('frontend.about.story_label') }}
+            <p class="ix-eyebrow mb-6 reveal reveal-delay-1">
+                <b>{{ __('frontend.about.story_label') }}</b>
             </p>
-            <h1 class="about-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white leading-[1.1] mb-8 reveal reveal-delay-2">
+            <h1 class="ix-d-lg mb-8 reveal reveal-delay-2">
                 {{ __('frontend.about.title') }}
             </h1>
-            <p class="about-sans text-lg md:text-xl text-gray-300 leading-relaxed max-w-xl reveal reveal-delay-3">
+            <p class="ix-body-lg ix-muted max-w-xl reveal reveal-delay-3">
                 {{ __('frontend.about.hero_subtitle') }}
             </p>
         </div>
@@ -200,29 +131,25 @@
 </section>
 
 {{-- ============================================ --}}
-{{-- STORY — Asymmetric editorial layout --}}
+{{-- STORY --}}
 {{-- ============================================ --}}
-<section class="py-24 md:py-36 bg-white relative overflow-hidden">
-    {{-- Decorative background circle --}}
-    <div class="absolute -right-32 top-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-pink-50 to-transparent opacity-60 pointer-events-none"></div>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+<section class="ix-sec bg-white relative overflow-hidden">
+    <div class="ix-wrap relative">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
             {{-- Text column --}}
             <div class="lg:col-span-5">
-                <span class="line-accent mb-6 reveal"></span>
-                <p class="about-sans text-[#BE185D] text-xs font-medium tracking-[0.25em] uppercase mb-4 reveal">
-                    {{ __('frontend.about.story_label') }}
+                <p class="ix-eyebrow mb-6 reveal">
+                    <b>{{ __('frontend.about.story_label') }}</b>
                 </p>
-                <h2 class="about-serif text-3xl md:text-4xl lg:text-[2.75rem] text-gray-900 leading-[1.15] mb-8 reveal reveal-delay-1">
+                <h2 class="ix-d-md mb-8 reveal reveal-delay-1">
                     {{ __('frontend.about.story_title') }}
                 </h2>
-                <div class="about-sans space-y-5 text-gray-500 leading-[1.8] reveal reveal-delay-2">
+                <div class="space-y-5 text-steel leading-[1.8] reveal reveal-delay-2">
                     <p>{{ __('frontend.about.story_p1') }}</p>
                     <p>{{ __('frontend.about.story_p2') }}</p>
                 </div>
                 <div class="editorial-quote mt-8 reveal reveal-delay-3">
-                    <p class="about-serif text-lg italic text-gray-700 leading-relaxed">
+                    <p class="text-lg text-ink font-medium leading-relaxed">
                         {{ __('frontend.about.story_p3') }}
                     </p>
                 </div>
@@ -231,23 +158,20 @@
             {{-- Image mosaic column --}}
             <div class="lg:col-span-7 reveal reveal-delay-2">
                 <div class="grid grid-cols-12 grid-rows-6 gap-4 h-[520px] md:h-[600px]">
-                    {{-- Large primary image --}}
                     <div class="col-span-7 row-span-6 img-overlay">
                         <img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&q=80"
                              alt="{{ __('frontend.about.story_label') }}"
-                             class="w-full h-full object-cover rounded-2xl" loading="lazy">
+                             class="w-full h-full object-cover" loading="lazy">
                     </div>
-                    {{-- Top right --}}
                     <div class="col-span-5 row-span-3 img-overlay">
                         <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&q=80"
                              alt="{{ __('frontend.about.story_label') }}"
-                             class="w-full h-full object-cover rounded-2xl" loading="lazy">
+                             class="w-full h-full object-cover" loading="lazy">
                     </div>
-                    {{-- Bottom right --}}
                     <div class="col-span-5 row-span-3 img-overlay">
                         <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80"
                              alt="{{ __('frontend.about.story_label') }}"
-                             class="w-full h-full object-cover rounded-2xl" loading="lazy">
+                             class="w-full h-full object-cover" loading="lazy">
                     </div>
                 </div>
             </div>
@@ -257,89 +181,86 @@
 
 
 {{-- ============================================ --}}
-{{-- MISSION / VISION / VALUES — Editorial cards --}}
+{{-- MISSION / VISION / VALUES --}}
 {{-- ============================================ --}}
-<section class="py-24 md:py-36 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-20 reveal">
-            <span class="line-accent mx-auto mb-6"></span>
-            <h2 class="about-serif text-3xl md:text-4xl lg:text-5xl text-gray-900 leading-tight mb-5">
+<section class="ix-sec bg-off">
+    <div class="ix-wrap">
+        <div class="mb-16 reveal">
+            <p class="ix-eyebrow mb-6"><b>{{ __('frontend.about.values_title') }}</b></p>
+            <h2 class="ix-d-md mb-5">
                 {{ __('frontend.about.values_title') }}
             </h2>
-            <p class="about-sans text-gray-400 max-w-lg mx-auto leading-relaxed">{{ __('frontend.about.values_subtitle') }}</p>
+            <p class="text-steel max-w-lg leading-relaxed">{{ __('frontend.about.values_subtitle') }}</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {{-- Mission --}}
-            <div class="value-card bg-white rounded-2xl border border-gray-100 p-10 overflow-hidden reveal reveal-delay-1">
-                <div class="about-serif text-6xl font-bold text-gray-100 leading-none mb-6 select-none">01</div>
-                <div class="w-12 h-12 bg-gradient-to-br from-[#BE185D] to-[#9D174D] rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-pink-200/40">
+            <div class="value-card bg-white border border-line p-10 overflow-hidden reveal reveal-delay-1">
+                <div class="font-mono text-sm tracking-[.14em] text-eblue mb-6 select-none">01</div>
+                <div class="value-icon">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
                 </div>
-                <h3 class="about-serif text-xl font-bold text-gray-900 mb-3">{{ __('frontend.about.mission_title') }}</h3>
-                <p class="about-sans text-gray-500 leading-relaxed text-[0.95rem]">{{ __('frontend.about.mission_desc') }}</p>
+                <h3 class="ix-h-zh text-xl text-ink mb-3">{{ __('frontend.about.mission_title') }}</h3>
+                <p class="text-steel leading-relaxed text-[0.95rem]">{{ __('frontend.about.mission_desc') }}</p>
             </div>
 
             {{-- Vision --}}
-            <div class="value-card bg-white rounded-2xl border border-gray-100 p-10 overflow-hidden reveal reveal-delay-2">
-                <div class="about-serif text-6xl font-bold text-gray-100 leading-none mb-6 select-none">02</div>
-                <div class="w-12 h-12 bg-gradient-to-br from-[#BE185D] to-[#9D174D] rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-pink-200/40">
+            <div class="value-card bg-white border border-line p-10 overflow-hidden reveal reveal-delay-2">
+                <div class="font-mono text-sm tracking-[.14em] text-eblue mb-6 select-none">02</div>
+                <div class="value-icon">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                     </svg>
                 </div>
-                <h3 class="about-serif text-xl font-bold text-gray-900 mb-3">{{ __('frontend.about.vision_title') }}</h3>
-                <p class="about-sans text-gray-500 leading-relaxed text-[0.95rem]">{{ __('frontend.about.vision_desc') }}</p>
+                <h3 class="ix-h-zh text-xl text-ink mb-3">{{ __('frontend.about.vision_title') }}</h3>
+                <p class="text-steel leading-relaxed text-[0.95rem]">{{ __('frontend.about.vision_desc') }}</p>
             </div>
 
             {{-- Core Values --}}
-            <div class="value-card bg-white rounded-2xl border border-gray-100 p-10 overflow-hidden reveal reveal-delay-3">
-                <div class="about-serif text-6xl font-bold text-gray-100 leading-none mb-6 select-none">03</div>
-                <div class="w-12 h-12 bg-gradient-to-br from-[#BE185D] to-[#9D174D] rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-pink-200/40">
+            <div class="value-card bg-white border border-line p-10 overflow-hidden reveal reveal-delay-3">
+                <div class="font-mono text-sm tracking-[.14em] text-eblue mb-6 select-none">03</div>
+                <div class="value-icon">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                     </svg>
                 </div>
-                <h3 class="about-serif text-xl font-bold text-gray-900 mb-3">{{ __('frontend.about.value_title') }}</h3>
-                <p class="about-sans text-gray-500 leading-relaxed text-[0.95rem]">{{ __('frontend.about.value_desc') }}</p>
+                <h3 class="ix-h-zh text-xl text-ink mb-3">{{ __('frontend.about.value_title') }}</h3>
+                <p class="text-steel leading-relaxed text-[0.95rem]">{{ __('frontend.about.value_desc') }}</p>
             </div>
         </div>
     </div>
 </section>
 
 {{-- ============================================ --}}
-{{-- TEAM — Cinematic split layout --}}
+{{-- TEAM --}}
 {{-- ============================================ --}}
-<section class="relative bg-[#faf9f7] grain overflow-hidden">
-    <div class="max-w-7xl mx-auto">
+<section class="relative bg-lsteel overflow-hidden">
+    <div class="max-w-[1600px] mx-auto">
         <div class="grid grid-cols-1 lg:grid-cols-2 min-h-[600px]">
             {{-- Image side --}}
             <div class="relative h-80 lg:h-auto overflow-hidden reveal">
                 <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1000&q=80"
                      alt="{{ __('frontend.about.team_title') }}"
                      class="absolute inset-0 w-full h-full object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-gradient-to-r from-transparent to-[#faf9f7]/20 hidden lg:block"></div>
             </div>
 
             {{-- Text side --}}
             <div class="relative z-10 flex items-center px-6 sm:px-10 lg:px-16 xl:px-20 py-16 lg:py-24">
                 <div>
-                    <span class="line-accent mb-6 reveal"></span>
-                    <p class="about-sans text-[#BE185D] text-xs font-medium tracking-[0.25em] uppercase mb-4 reveal reveal-delay-1">
-                        {{ __('frontend.about.team_label') }}
+                    <p class="ix-eyebrow mb-6 reveal reveal-delay-1">
+                        <b>{{ __('frontend.about.team_label') }}</b>
                     </p>
-                    <h2 class="about-serif text-3xl md:text-4xl text-gray-900 leading-[1.15] mb-8 reveal reveal-delay-2">
+                    <h2 class="ix-d-md mb-8 reveal reveal-delay-2">
                         {{ __('frontend.about.team_title') }}
                     </h2>
-                    <div class="about-sans space-y-5 text-gray-500 leading-[1.8] reveal reveal-delay-3">
+                    <div class="space-y-5 text-steel leading-[1.8] reveal reveal-delay-3">
                         <p>{{ __('frontend.about.team_p1') }}</p>
                         <p>{{ __('frontend.about.team_p2') }}</p>
                     </div>
-                    <a href="{{ lroute('contact') }}"
-                       class="inline-flex items-center gap-2 mt-10 px-8 py-4 bg-[#BE185D] text-white font-semibold rounded-xl hover:bg-[#9D174D] transition-all duration-300 hover:shadow-lg hover:shadow-pink-200/40 about-sans text-sm reveal reveal-delay-4">
+                    <a href="{{ lroute('contact') }}" class="ix-btn ix-btn-p mt-10 reveal reveal-delay-4">
                         {{ __('frontend.about.team_cta') }}
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                     </a>
@@ -350,17 +271,18 @@
 </section>
 
 {{-- ============================================ --}}
-{{-- WHY CHOOSE US — Feature grid with rings --}}
+{{-- WHY CHOOSE US --}}
 {{-- ============================================ --}}
-<section class="py-24 md:py-36 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-20 reveal">
-            <h2 class="about-serif text-3xl md:text-4xl lg:text-5xl text-gray-900 leading-tight">
+<section class="ix-sec bg-white">
+    <div class="ix-wrap">
+        <div class="mb-16 reveal">
+            <p class="ix-eyebrow mb-6"><b>{{ __('frontend.about.why_title') }}</b></p>
+            <h2 class="ix-d-md">
                 {{ __('frontend.about.why_title') }}
             </h2>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             @php
             $features = [
                 [
@@ -387,12 +309,12 @@
             @endphp
 
             @foreach($features as $i => $feat)
-            <div class="text-center reveal reveal-delay-{{ $i + 1 }}">
-                <div class="feature-ring w-16 h-16 bg-[#faf9f7] rounded-xl flex items-center justify-center mx-auto mb-6 transition-all duration-300">
-                    <svg class="w-7 h-7 text-[#BE185D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $feat['icon'] !!}</svg>
+            <div class="feature-ring bg-off p-8 reveal reveal-delay-{{ $i + 1 }}">
+                <div class="feature-ico">
+                    <svg class="w-7 h-7 text-eblue" fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $feat['icon'] !!}</svg>
                 </div>
-                <h3 class="about-serif text-lg font-bold text-gray-900 mb-2">{{ $feat['title'] }}</h3>
-                <p class="about-sans text-sm text-gray-400 leading-relaxed">{{ $feat['desc'] }}</p>
+                <h3 class="ix-h-zh text-lg text-ink mb-2">{{ $feat['title'] }}</h3>
+                <p class="text-sm text-steel leading-relaxed">{{ $feat['desc'] }}</p>
             </div>
             @endforeach
         </div>
@@ -400,30 +322,26 @@
 </section>
 
 {{-- ============================================ --}}
-{{-- CTA — Dark cinematic with mesh gradient --}}
+{{-- CTA --}}
 {{-- ============================================ --}}
-<section class="cta-mesh py-24 md:py-32 text-center relative overflow-hidden">
-    {{-- Decorative rings --}}
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-white/5 rounded-full pointer-events-none"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-white/5 rounded-full pointer-events-none"></div>
-
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <span class="line-accent mx-auto mb-8 reveal"></span>
-        <h2 class="about-serif text-3xl md:text-4xl lg:text-5xl text-white leading-tight mb-6 reveal reveal-delay-1">
-            {{ __('frontend.about.cta_title') }}
-        </h2>
-        <p class="about-sans text-gray-400 mb-10 text-lg leading-relaxed max-w-xl mx-auto reveal reveal-delay-2">
-            {{ __('frontend.about.cta_desc') }}
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center reveal reveal-delay-3">
-            <a href="{{ lroute('products.index') }}"
-               class="inline-flex items-center justify-center py-4 bg-[#BE185D] text-white font-semibold rounded-xl hover:bg-[#9D174D] transition-all duration-300 hover:shadow-lg hover:shadow-pink-900/30 about-sans" style="padding-left:3.5rem;padding-right:3.5rem;">
-                {{ __('frontend.home.browse_products') }}
-            </a>
-            <a href="{{ lroute('contact') }}"
-               class="inline-flex items-center justify-center py-4 border border-white/20 text-white font-semibold rounded-xl hover:bg-white/10 hover:border-white/40 transition-all duration-300 about-sans backdrop-blur-sm" style="padding-left:3.5rem;padding-right:3.5rem;">
-                {{ __('frontend.home.contact_us') }}
-            </a>
+<section class="cta-mesh ix-dark py-24 md:py-32 relative overflow-hidden">
+    <div class="ix-wrap relative z-10">
+        <div class="max-w-3xl">
+            <p class="ix-eyebrow mb-6 reveal"><b>{{ __('frontend.about.cta_title') }}</b></p>
+            <h2 class="ix-d-lg mb-6 reveal reveal-delay-1">
+                {{ __('frontend.about.cta_title') }}
+            </h2>
+            <p class="ix-body-lg ix-muted mb-10 max-w-xl reveal reveal-delay-2">
+                {{ __('frontend.about.cta_desc') }}
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 reveal reveal-delay-3">
+                <a href="{{ lroute('products.index') }}" class="ix-btn ix-btn-w">
+                    {{ __('frontend.home.browse_products') }}
+                </a>
+                <a href="{{ lroute('contact') }}" class="ix-btn ix-btn-gd">
+                    {{ __('frontend.home.contact_us') }}
+                </a>
+            </div>
         </div>
     </div>
 </section>

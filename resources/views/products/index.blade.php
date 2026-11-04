@@ -2,17 +2,17 @@
 
 @section('content')
 {{-- Breadcrumb --}}
-<nav class="bg-gray-100 border-b border-gray-200 py-3">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ol class="flex items-center space-x-2 text-sm">
-            <li><a href="{{ lroute('home') }}" class="text-gray-500 hover:text-[#BE185D] transition">{{ __('frontend.common.home') }}</a></li>
-            <li class="text-gray-300">/</li>
+<nav class="bg-lsteel border-b border-line py-3">
+    <div class="ix-wrap">
+        <ol class="flex flex-wrap items-center gap-x-2 font-mono text-xs uppercase tracking-wider">
+            <li><a href="{{ lroute('home') }}" class="text-steel hover:text-eblue transition">{{ __('frontend.common.home') }}</a></li>
+            <li class="text-line">/</li>
             @if(isset($currentCategory) && $currentCategory)
-            <li><a href="{{ lroute('products.index') }}" class="text-gray-500 hover:text-[#BE185D] transition">{{ __('frontend.product.title') }}</a></li>
-            <li class="text-gray-300">/</li>
-            <li class="text-[#1a1a1a] font-bold">{{ $currentCategory->name }}</li>
+            <li><a href="{{ lroute('products.index') }}" class="text-steel hover:text-eblue transition">{{ __('frontend.product.title') }}</a></li>
+            <li class="text-line">/</li>
+            <li class="text-ink font-medium">{{ $currentCategory->name }}</li>
             @else
-            <li class="text-[#1a1a1a] font-bold">{{ __('frontend.product.all_categories') }}</li>
+            <li class="text-ink font-medium">{{ __('frontend.product.all_categories') }}</li>
             @endif
         </ol>
     </div>
@@ -23,16 +23,16 @@
     :subtitle="$currentCategory ? (__('frontend.product.explore_category_range') ?: '探索此分類精選商品') : (__('frontend.product.explore_full_range') ?: '探索完整的產品系列')"
     image="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1920&q=80" />
 
-<section class="py-12 md:py-16 bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+<section class="ix-sec bg-white" style="padding-top: clamp(48px, 6vw, 88px); padding-bottom: clamp(56px, 8vw, 120px);">
+    <div class="ix-wrap">
+
         @if(!isset($currentCategory) || !$currentCategory)
             {{-- Category Grid (Show All Categories) --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($categories as $cat)
                 <a href="{{ lroute('category.show', ['slug' => $cat->slug ?: (collect($cat->getTranslations('slug'))->first() ?: 'category')]) }}" class="group">
-                    <div class="ind-card rounded-lg overflow-hidden transition-all duration-300 transform group-hover:-translate-y-1 group-hover:shadow-lg">
-                        <div class="overflow-hidden aspect-video bg-gray-100 relative">
+                    <div class="ind-card">
+                        <div class="overflow-hidden aspect-video ix-ph relative">
                             @if($cat->image_path)
                             <img src="{{ asset('storage/' . $cat->image_path) }}"
                                  alt="{{ $cat->name }}"
@@ -40,26 +40,26 @@
                                  loading="lazy">
                             @else
                             {{-- Geometric Placeholder --}}
-                            <div class="w-full h-full bg-gradient-to-br from-gray-50 to-gray-200 flex items-center justify-center">
-                                <svg class="w-16 h-16 text-gray-400 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="w-full h-full flex items-center justify-center">
+                                <svg class="w-16 h-16 text-white opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                                 </svg>
                             </div>
                             @endif
                         </div>
-                        <div class="p-6 text-center">
-                            <h2 class="text-xl font-bold text-[#1a1a1a] group-hover:text-[#BE185D] transition">
+                        <div class="p-6 border-t border-line">
+                            <h2 class="ix-h-zh text-xl text-ink group-hover:text-eblue transition">
                                 {{ $cat->name }}
                             </h2>
-                            <p class="text-gray-500 text-sm mt-2">
+                            <p class="font-mono text-xs uppercase tracking-wider text-muted mt-3">
                                 {{ __('frontend.product.explore_category_range') }} →
                             </p>
                         </div>
                     </div>
                 </a>
                 @empty
-                <div class="col-span-full text-center py-16 text-gray-400">
-                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="col-span-full text-center py-16 text-muted">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-line" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                     </svg>
                     <p>{{ __('frontend.product.no_categories') }}</p>
@@ -70,9 +70,9 @@
             <div class="flex flex-col lg:flex-row gap-8">
                 {{-- Sidebar Category List --}}
                 <aside class="w-full lg:w-1/4 flex-shrink-0">
-                    <div class="bg-white rounded-lg p-5 border border-gray-100 shadow-sm sticky top-6">
-                        <h2 class="text-lg font-bold text-gray-800 border-b border-gray-100 pb-3 mb-4 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-[#BE185D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="bg-white p-5 border border-line sticky top-24" style="border-radius: 2px;">
+                        <h2 class="font-mono text-xs uppercase tracking-widest font-medium text-ink border-b border-line pb-3 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-eblue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                             </svg>
                             {{ __('frontend.product.title') ?: '產品分類' }}
@@ -88,7 +88,7 @@
                                     .scrollbar-none::-webkit-scrollbar { display: none; }
                                 </style>
                             <a href="{{ lroute('products.index') }}"
-                               class="px-4 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition duration-200 border lg:border-none {{ !isset($currentCategory) || !$currentCategory ? 'bg-[#BE185D] text-white lg:bg-[#fdf2f8] lg:text-[#BE185D]' : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-[#BE185D] border-gray-200' }}">
+                               class="px-4 py-2.5 rounded-sm text-sm font-semibold flex items-center gap-2 transition duration-200 border lg:border-none {{ !isset($currentCategory) || !$currentCategory ? 'bg-navy text-white lg:bg-lsteel lg:text-eblue' : 'bg-white text-steel hover:bg-off hover:text-eblue border-line' }}">
                                 <span class="truncate">← {{ __('frontend.product.all_categories') }}</span>
                             </a>
                             
@@ -117,7 +117,7 @@
                                     // 容器樣式：如果是子分類，綁定 x-show="open" 與 x-transition 以實現流暢的摺疊收合動畫
                                     $containerAttr = $isRoot 
                                         ? 'class="flex flex-col gap-1 w-full"' 
-                                        : 'class="pl-4 border-l border-gray-200 ml-4 flex flex-col gap-1.5 mt-1 mb-1.5" x-show="open" x-transition';
+                                        : 'class="pl-4 border-l border-line ml-4 flex flex-col gap-1.5 mt-1 mb-1.5" x-show="open" x-transition';
 
                                     echo '<div ' . $containerAttr . '>';
 
@@ -131,13 +131,13 @@
                                         $url = lroute('category.show', ['slug' => $cat->slug ?: (collect($cat->getTranslations('slug'))->first() ?: 'category')]);
                                         
                                         // 依據是否為根層級（一級）調整字體與間距
-                                        $padding = $isRoot ? 'px-4 py-2.5 rounded-lg' : 'px-3 py-1.5 rounded-md';
-                                        $fontSize = $isRoot ? 'text-sm font-bold' : 'text-xs font-semibold';
-                                        
+                                        $padding = $isRoot ? 'px-4 py-2.5 rounded-sm' : 'px-3 py-1.5 rounded-sm';
+                                        $fontSize = $isRoot ? 'text-sm font-semibold' : 'text-xs font-medium';
+
                                         // 動態高亮樣式
-                                        $activeClass = $isActive 
-                                            ? 'bg-[#BE185D] text-white lg:bg-[#fdf2f8] lg:text-[#BE185D]' 
-                                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-[#BE185D] border-gray-200';
+                                        $activeClass = $isActive
+                                            ? 'bg-navy text-white lg:bg-lsteel lg:text-eblue'
+                                            : 'bg-white text-steel hover:bg-off hover:text-eblue border-line';
 
                                         // 使用 x-data 控制當前節點的展開摺疊狀態，預設展開處於活動分支的選單
                                         $xDataStr = 'x-data="{ open: ' . ($isBranchActive ? 'true' : 'false') . ' }"';
@@ -154,8 +154,8 @@
                                         
                                         // 2. 右側小箭頭：點擊僅切換展開/摺疊狀態，不觸發跳轉，並帶有精美旋轉動畫
                                         if ($hasChildren) {
-                                            echo '    <button @click.prevent.stop="open = !open" class="p-1 rounded hover:bg-gray-200/50 dark:hover:bg-gray-800/50 transition-colors duration-150 flex items-center justify-center focus:outline-none" style="margin-right: -4px;">';
-                                            echo '      <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="open ? \'rotate-90 text-[#BE185D]\' : \'\'" fill="none" stroke="currentColor" viewBox="0 0 24 24">';
+                                            echo '    <button @click.prevent.stop="open = !open" class="p-1 rounded hover:bg-line/50 transition-colors duration-150 flex items-center justify-center" style="margin-right: -4px;">';
+                                            echo '      <svg class="w-4 h-4 text-muted transition-transform duration-200" :class="open ? \'rotate-90 text-eblue\' : \'\'" fill="none" stroke="currentColor" viewBox="0 0 24 24">';
                                             echo '          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>';
                                             echo '      </svg>';
                                             echo '    </button>';
@@ -187,9 +187,9 @@
                     {{-- Product Grid --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         @forelse($products as $product)
-                        <article class="ind-card rounded-lg overflow-hidden group">
+                        <article class="ind-card group">
                             @php $primaryImg = $product->primaryImage ?? $product->images->first(); @endphp
-                            <div class="Ind-image-container overflow-hidden">
+                            <div class="Ind-image-container overflow-hidden border-b border-line">
                                 @if($primaryImg)
                                 <img src="{{ asset('storage/' . $primaryImg->paths['thumb']) }}"
                                      alt="{{ $product->meta_keywords ?? $product->name }}"
@@ -198,31 +198,31 @@
                                      width="500"
                                      height="500">
                                 @else
-                                <div class="w-full h-48 bg-gray-100 flex items-center justify-center">
-                                    <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div class="w-full h-48 ix-ph flex items-center justify-center">
+                                    <svg class="w-12 h-12 text-white opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
                                 </div>
                                 @endif
                             </div>
                             <div class="p-5">
-                                <h2 class="text-lg font-bold text-[#1a1a1a] mb-2 line-clamp-1">
+                                <h2 class="ix-h-zh text-lg text-ink mb-2 line-clamp-1">
                                     {{ $product->name }}
                                 </h2>
-                                <p class="text-gray-500 text-sm mb-3 line-clamp-2">
+                                <p class="text-steel text-sm mb-3 line-clamp-2">
                                     {{ Str::limit(strip_tags($product->description), 60) }}
                                 </p>
                                 <div class="flex items-center justify-between">
                                     <a href="{{ lroute('products.show', ['id' => $product->id, 'slug' => $product->slug ?: 'product']) }}"
-                                       class="text-[#1a1a1a] hover:text-[#BE185D] text-sm font-bold transition">
+                                       class="text-eblue hover:text-eblue-h font-mono text-xs uppercase tracking-wider font-medium transition py-2">
                                         {{ __('frontend.product.details') }} →
                                     </a>
                                 </div>
                             </div>
                         </article>
                         @empty
-                        <div class="col-span-full text-center py-16 text-gray-400">
-                            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="col-span-full text-center py-16 text-muted">
+                            <svg class="w-16 h-16 mx-auto mb-4 text-line" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                             </svg>
                             <p>{{ __('frontend.product.no_products') }}</p>
