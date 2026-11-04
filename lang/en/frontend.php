@@ -5,6 +5,8 @@ return [
     'nav' => [
         'main' => 'Main menu',
         'solutions' => 'Solutions',
+        'videos' => 'Videos',
+        'all_videos' => 'All videos',
         'applications' => 'Applications',
         'technology' => 'Technology',
         'quote' => 'Request Quote',
@@ -240,6 +242,16 @@ return [
         'category' => 'Category',
         'no_news' => 'No news available',
         'related' => 'Related Articles',
+    ],
+
+    // Videos
+    'video' => [
+        'title' => 'Videos',
+        'subtitle' => 'Watch our products, technology and applications in action',
+        'empty' => 'No videos available',
+        'watch' => 'Watch Video',
+        'related' => 'More Videos',
+        'back_to_list' => 'Back to Videos',
     ],
 
     // Contact

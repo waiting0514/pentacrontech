@@ -7,7 +7,7 @@
     $is = fn (string ...$p) => request()->is(...$p);
     $nav = [
         ['key' => 'products', 'url' => lroute('products.index'), 'on' => $is('products*', '*/products*', 'category/*', '*/category/*'), 'en' => 'Products'],
-        ['key' => 'solutions', 'url' => lroute('home') . '#solutions', 'on' => false, 'en' => 'Solutions'],
+        ['key' => 'videos', 'url' => lroute('videos.index'), 'on' => $is('videos*', '*/videos*'), 'en' => 'Videos'],
         ['key' => 'applications', 'url' => lroute('home') . '#applications', 'on' => false, 'en' => 'Applications'],
         ['key' => 'technology', 'url' => lroute('knowledge.index'), 'on' => $is('knowledge*', '*/knowledge*'), 'en' => 'Technology'],
         ['key' => 'about', 'url' => lroute('about'), 'on' => $is('about*', '*/about*'), 'en' => 'About'],

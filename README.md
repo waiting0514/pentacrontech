@@ -212,6 +212,8 @@ docker compose exec laravel.test npm run build
 
 > 登入使用的是**帳號（username）**，不是 email。上線前務必更換預設密碼。
 
+**影片管理**：後台「影片管理」可貼上 YouTube 網址新增影片（含名稱、簡介與 SEO 欄位），前台在 `/videos` 顯示。需要 `video.manage` 權限（`super-admin`、`manager`、`editor` 預設擁有）。既有環境升級後請執行 `php artisan migrate` 與 `php artisan db:seed --class=RolesAndPermissionsSeeder`（可重複執行）。
+
 ### 步驟 11（選用）：設定 AI 金鑰
 
 AI 功能需要在 `.env` 填入第三方服務金鑰，沒填也能使用其他功能，只是 AI 功能會失敗：

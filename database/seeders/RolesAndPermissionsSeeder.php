@@ -30,6 +30,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'knowledge.update',
             'knowledge.delete',
             'banner.manage',
+            'video.manage',
             'ai.use',
             'user.manage',
             'report.view_cost',
@@ -53,7 +54,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'product.view', 'product.create', 'product.update', 'product.delete',
             'news.view', 'news.create', 'news.update', 'news.delete',
             'knowledge.view', 'knowledge.create', 'knowledge.update', 'knowledge.delete',
-            'banner.manage', 'ai.use', 'user.manage', 'report.view_cost',
+            'banner.manage', 'video.manage', 'ai.use', 'user.manage', 'report.view_cost',
             'order.view',
         ]);
 
@@ -62,7 +63,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'product.view', 'product.create', 'product.update',
             'news.view', 'news.create', 'news.update', 'news.delete',
             'knowledge.view', 'knowledge.create', 'knowledge.update', 'knowledge.delete',
-            'banner.manage', 'ai.use',
+            'banner.manage', 'video.manage', 'ai.use',
         ]);
 
         // Create default users

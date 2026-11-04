@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Product;
 use App\Models\News;
+use App\Models\Video;
 use Illuminate\Console\Command;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\Tags\Url;
@@ -67,6 +68,23 @@ class GenerateSitemap extends Command
                     ->setLastModificationDate($news->updated_at)
                     ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
                     ->setPriority(0.7)
+            );
+        });
+
+        // Video listing
+        $sitemap->add(
+            Url::create('/videos')
+                ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
+                ->setPriority(0.7)
+        );
+
+        // Individual videos
+        Video::active()->ordered()->get()->each(function (Video $video) use ($sitemap) {
+            $sitemap->add(
+                Url::create("/videos/{$video->id}-" . ($video->slug ?: 'video'))
+                    ->setLastModificationDate($video->updated_at)
+                    ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
+                    ->setPriority(0.6)
             );
         });
 

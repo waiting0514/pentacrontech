@@ -5,6 +5,8 @@ return [
     'nav' => [
         'main' => '主選單',
         'solutions' => '解決方案',
+        'videos' => '影片',
+        'all_videos' => '全部影片',
         'applications' => '產業應用',
         'technology' => '技術',
         'quote' => '詢價 Request Quote',
@@ -240,6 +242,16 @@ return [
         'category' => '分類',
         'no_news' => '目前沒有最新消息',
         'related' => '相關文章',
+    ],
+
+    // Videos
+    'video' => [
+        'title' => '影片',
+        'subtitle' => '透過影片了解我們的產品、技術與應用實績',
+        'empty' => '目前沒有影片',
+        'watch' => '觀看影片',
+        'related' => '更多影片',
+        'back_to_list' => '返回影片列表',
     ],
 
     // Contact

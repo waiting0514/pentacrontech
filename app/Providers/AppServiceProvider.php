@@ -8,6 +8,8 @@ use App\Models\News;
 use App\Models\NewsCategory;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\Video;
+use App\Observers\VideoObserver;
 use App\Observers\KnowledgeArticleObserver;
 use App\Observers\KnowledgeCategoryObserver;
 use App\Observers\NewsCategoryObserver;
@@ -44,6 +46,7 @@ class AppServiceProvider extends ServiceProvider
         NewsCategory::observe(NewsCategoryObserver::class);
         KnowledgeArticle::observe(KnowledgeArticleObserver::class);
         KnowledgeCategory::observe(KnowledgeCategoryObserver::class);
+        Video::observe(VideoObserver::class);
 
         // Define multilang route macro
         Route::macro('multilang', function ($uri, $action) {

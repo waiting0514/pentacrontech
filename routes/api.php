@@ -81,6 +81,9 @@ Route::middleware(['auth:sanctum', 'active', 'role:super-admin|admin|manager|edi
     Route::patch('/banners/{banner}/sort', [App\Http\Controllers\Api\BannerController::class, 'updateSort']);
     Route::delete('/banners/{banner}', [App\Http\Controllers\Api\BannerController::class, 'destroy']);
 
+    // Videos (YouTube)
+    Route::apiResource('videos', App\Http\Controllers\Api\VideoController::class)->names('api.videos');
+
     // Image upload for rich text editor
     Route::post('/upload-image', [App\Http\Controllers\Api\ImageUploadController::class, 'upload']);
 

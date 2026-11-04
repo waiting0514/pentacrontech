@@ -27,6 +27,12 @@ const routes = [
                 meta: { title: '輪播圖管理', icon: 'Picture', permission: 'banner.manage' },
             },
             {
+                path: 'video',
+                name: 'Video',
+                component: () => import('../views/video/index.vue'),
+                meta: { title: '影片管理', icon: 'VideoCamera', permission: 'video.manage' },
+            },
+            {
                 path: 'product',
                 name: 'Product',
                 component: () => import('../views/product/index.vue'),

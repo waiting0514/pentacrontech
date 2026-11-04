@@ -4,6 +4,7 @@ export { default as productCategoryService } from './productCategoryService';
 export { default as newsService } from './newsService';
 export { default as newsCategoryService } from './newsCategoryService';
 export { default as bannerService } from './bannerService';
+export { default as videoService } from './videoService';
 export { default as aiService } from './aiService';
 export { default as usageService } from './usageService';
 export { default as settingsService } from './settingsService';

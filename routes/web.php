@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\ProductController;
 use App\Http\Controllers\Frontend\NewsController;
+use App\Http\Controllers\Frontend\VideoController;
 use App\Http\Controllers\Frontend\KnowledgeController;
 use App\Http\Controllers\Frontend\AboutController;
 use App\Http\Controllers\Frontend\ContactController;
@@ -45,6 +46,14 @@ Route::middleware(['web', 'maintenance'])->group(function () {
         ->where(['id' => '[0-9]+', 'slug' => '[a-z0-9\-]+'])
         ->name('news.show');
     Route::multilang('/news/{id}', [NewsController::class, 'redirectToSlug'])
+        ->where('id', '[0-9]+');
+
+    // Videos
+    Route::multilang('/videos', [VideoController::class, 'index'])->name('videos.index');
+    Route::multilang('/videos/{id}-{slug}', [VideoController::class, 'show'])
+        ->where(['id' => '[0-9]+', 'slug' => '[a-z0-9\-]+'])
+        ->name('videos.show');
+    Route::multilang('/videos/{id}', [VideoController::class, 'redirectToSlug'])
         ->where('id', '[0-9]+');
 
     // Knowledge Base

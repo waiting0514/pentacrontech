@@ -36,11 +36,12 @@
                 </ul>
             </div>
             <div>
-                <h4>{{ __('frontend.nav.solutions') }}</h4>
+                <h4>{{ __('frontend.nav.videos') }}</h4>
                 <ul>
-                    <li><a href="{{ lroute('home') }}#solutions">{{ __('frontend.home.ix.auto_step1') }}</a></li>
-                    <li><a href="{{ lroute('home') }}#solutions">{{ __('frontend.home.ix.auto_step2') }}</a></li>
-                    <li><a href="{{ lroute('home') }}#solutions">{{ __('frontend.home.ix.auto_step3') }}</a></li>
+                    @foreach(\App\Models\Video::active()->ordered()->take(3)->get() as $footerVideo)
+                        <li><a href="{{ $footerVideo->url }}">{{ $footerVideo->title }}</a></li>
+                    @endforeach
+                    <li><a href="{{ lroute('videos.index') }}">{{ __('frontend.nav.all_videos') }}</a></li>
                 </ul>
             </div>
             <div>
