@@ -46,6 +46,21 @@ class Product extends Model
         return $this->hasMany(ProductImage::class)->orderBy('sort_order');
     }
 
+    public function attachments()
+    {
+        return $this->hasMany(ProductAttachment::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    protected static function booted(): void
+    {
+        // FK cascade removes rows without firing model events, so delete the
+        // file records first to clean up the physical PDFs.
+        static::deleting(function (Product $product) {
+            $product->attachments()->with('files')->get()
+                ->each(fn (ProductAttachment $a) => $a->files->each->delete());
+        });
+    }
+
     public function primaryImage()
     {
         return $this->hasOne(ProductImage::class)->where('is_primary', true);

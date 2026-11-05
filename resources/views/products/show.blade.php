@@ -118,6 +118,48 @@
                 </div>
                 @endif
 
+                {{-- Downloads --}}
+                @php
+                    $downloadItems = $product->attachments
+                        ->map(fn($a) => ['attachment' => $a, 'file' => $a->fileFor()])
+                        ->filter(fn($i) => $i['file']);
+                @endphp
+                @if($downloadItems->isNotEmpty())
+                <section class="border-t border-line pt-6 mt-8" id="downloads">
+                    <h2 class="font-mono text-xs font-medium text-ink mb-4 uppercase tracking-widest">{{ __('frontend.product.downloads') }}</h2>
+                    <ul class="border border-line bg-white divide-y divide-line" style="border-radius: 2px;">
+                        @foreach($downloadItems as $item)
+                        @php
+                            $file = $item['file'];
+                            $dlTitle = $item['attachment']->displayTitle() ?: $file->original_name;
+                        @endphp
+                        <li>
+                            <a href="{{ $file->url }}" download="{{ $file->original_name }}" target="_blank" rel="noopener"
+                               class="group flex items-center gap-4 p-4 hover:bg-off transition"
+                               aria-label="{{ __('frontend.product.download_pdf') }}: {{ $dlTitle }}">
+                                <svg class="w-8 h-8 shrink-0 text-eblue" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zM14 3v5h5"/>
+                                    <text x="12" y="17" text-anchor="middle" font-size="5" font-weight="700" fill="currentColor" stroke="none" font-family="monospace">PDF</text>
+                                </svg>
+                                <span class="min-w-0 flex-1">
+                                    <span class="block text-ink font-medium break-words group-hover:text-eblue transition">{{ $dlTitle }}</span>
+                                    <span class="mt-1 flex flex-wrap items-center gap-2 font-mono text-xs text-steel">
+                                        <span>PDF · {{ $file->human_size }}</span>
+                                        @if($file->locale !== app()->getLocale())
+                                        <span class="border border-line px-1.5 py-0.5 uppercase tracking-wider text-steel" style="border-radius: 2px;">{{ $file->locale }}</span>
+                                        @endif
+                                    </span>
+                                </span>
+                                <svg class="w-5 h-5 shrink-0 text-steel group-hover:text-eblue transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
+                                </svg>
+                            </a>
+                        </li>
+                        @endforeach
+                    </ul>
+                </section>
+                @endif
+
                 {{-- Add to Inquiry Cart + Toast --}}
                 @if(false)
                 <div class="mt-8" x-data="{ added: false, qty: 1 }">

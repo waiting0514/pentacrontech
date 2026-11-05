@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, nextTick, onMounted, getCurrentInstance } from 'vue';
 import { productService, productCategoryService, aiService } from '../../../services';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage, ElMessageBox, genFileId } from 'element-plus';
 import RichTextEditor from '../../components/RichTextEditor.vue';
 import TranslatableInput from '../../components/TranslatableInput.vue';
 import TranslatableRichText from '../../components/TranslatableRichText.vue';
@@ -227,6 +227,7 @@ const openCreate = async () => {
   isEditing.value = false;
   currentProduct.value = null;
   productImages.value = [];
+  attachments.value = [];
   pendingImagePreviews.value = [];
   newProductFiles.value = [];
   newProductPreviews.value.forEach(url => URL.revokeObjectURL(url));
@@ -279,6 +280,8 @@ const openEdit = (product) => {
     is_inquiry_only: Boolean(product.is_inquiry_only),
   };
   showDialog.value = true;
+  attachments.value = [];
+  fetchAttachments();
 };
 
 const saveProduct = async () => {
@@ -445,6 +448,209 @@ const setPrimary = async (image) => {
     ElMessage.success(proxy.$t('admin.messages.primary_set_success'));
   } catch (err) {
     ElMessage.error(proxy.$t('admin.messages.primary_set_failed'));
+  }
+};
+
+// ===== PDF 附件管理 =====
+const ATTACHMENT_MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const ATTACHMENT_MAX_COUNT = 10;
+
+const attachments = ref([]);
+const isAttachmentsLoading = ref(false);
+const showAttachmentDialog = ref(false);
+const editingAttachment = ref(null); // null = 新增
+const attachmentTitles = ref({});
+const attachmentFiles = ref({}); // locale -> File（尚未上傳）
+const attachmentErrors = ref({});
+const attachmentActiveTab = ref('zh-TW');
+const attachmentUploadRefs = {};
+const isSavingAttachment = ref(false);
+const removingLocale = ref('');
+
+const defaultLocale = computed(() => {
+  const d = languages.value.find(l => l.is_default) || languages.value[0];
+  return d ? d.code : 'zh-TW';
+});
+
+const setUploadRef = (locale, el) => {
+  if (el) attachmentUploadRefs[locale] = el;
+  else delete attachmentUploadRefs[locale];
+};
+
+const formatFileSize = (bytes) => {
+  if (bytes >= 1024 * 1024) return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+  return Math.max(1, Math.round(bytes / 1024)) + ' KB';
+};
+
+const attachmentTitleText = (att, locale) => att.title?.[locale] || '';
+const attachmentFile = (att, locale) => (att.files || []).find(f => f.locale === locale);
+
+const fetchAttachments = async () => {
+  if (!currentProduct.value?.id) return;
+  isAttachmentsLoading.value = true;
+  try {
+    const res = await productService.listAttachments(currentProduct.value.id);
+    attachments.value = res.data.data || [];
+  } catch (err) {
+    ElMessage.error('載入附件失敗：' + (err.response?.data?.message || err.message));
+  } finally {
+    isAttachmentsLoading.value = false;
+  }
+};
+
+const resetAttachmentForm = (att = null) => {
+  editingAttachment.value = att;
+  attachmentFiles.value = {};
+  attachmentErrors.value = {};
+  const titles = {};
+  languages.value.forEach(l => { titles[l.code] = att?.title?.[l.code] || ''; });
+  attachmentTitles.value = titles;
+  attachmentActiveTab.value = defaultLocale.value;
+};
+
+const openAttachmentDialog = (att = null) => {
+  if (!att && attachments.value.length >= ATTACHMENT_MAX_COUNT) {
+    ElMessage.warning(`每個產品最多 ${ATTACHMENT_MAX_COUNT} 份附件`);
+    return;
+  }
+  resetAttachmentForm(att);
+  showAttachmentDialog.value = true;
+};
+
+const validatePdfFile = (file) => {
+  if (!/\.pdf$/i.test(file.name)) {
+    ElMessage.warning('僅限 PDF 檔案（副檔名需為 .pdf）');
+    return false;
+  }
+  if (file.size > ATTACHMENT_MAX_SIZE) {
+    ElMessage.warning('檔案超過 10 MB 上限');
+    return false;
+  }
+  return true;
+};
+
+const onAttachmentFileChange = (locale, uploadFile) => {
+  if (uploadFile.status !== 'ready') return;
+  if (!validatePdfFile(uploadFile.raw)) {
+    attachmentUploadRefs[locale]?.handleRemove(uploadFile);
+    return;
+  }
+  attachmentFiles.value = { ...attachmentFiles.value, [locale]: uploadFile.raw };
+};
+
+const onAttachmentFileRemove = (locale) => {
+  const next = { ...attachmentFiles.value };
+  delete next[locale];
+  attachmentFiles.value = next;
+};
+
+// 已選一個檔案後再選：以新檔取代（limit 1）
+const onAttachmentFileExceed = (locale, files) => {
+  const up = attachmentUploadRefs[locale];
+  if (!up || !files.length) return;
+  up.clearFiles();
+  const file = files[0];
+  file.uid = genFileId();
+  up.handleStart(file);
+};
+
+const errorsFor = (locale, field) => {
+  const errs = attachmentErrors.value;
+  const out = [];
+  Object.keys(errs).forEach(k => {
+    if (k === `${field}.${locale}`) out.push(...errs[k]);
+  });
+  return out;
+};
+
+const generalAttachmentErrors = computed(() => {
+  const out = [];
+  Object.keys(attachmentErrors.value).forEach(k => {
+    if (!/^(title|files)\.[^.]+$/.test(k)) out.push(...attachmentErrors.value[k]);
+  });
+  return out;
+});
+
+const tabHasError = (locale) => errorsFor(locale, 'title').length > 0 || errorsFor(locale, 'files').length > 0;
+
+const saveAttachment = async () => {
+  attachmentErrors.value = {};
+  const isEdit = Boolean(editingAttachment.value);
+  const defLoc = defaultLocale.value;
+  const fileLocales = Object.keys(attachmentFiles.value);
+
+  if (!isEdit && fileLocales.length === 0) {
+    ElMessage.warning('請至少選擇一個語系的 PDF 檔案');
+    return;
+  }
+  const defTitle = (attachmentTitles.value[defLoc] || '').trim();
+  if (!defTitle) {
+    attachmentActiveTab.value = defLoc;
+    attachmentErrors.value = { [`title.${defLoc}`]: ['預設語系的標題為必填'] };
+    ElMessage.warning('請填寫預設語系的標題');
+    return;
+  }
+
+  const titles = {};
+  Object.entries(attachmentTitles.value).forEach(([loc, v]) => { titles[loc] = (v || '').trim(); });
+
+  isSavingAttachment.value = true;
+  try {
+    const productId = currentProduct.value.id;
+    const payload = { titles, files: attachmentFiles.value };
+    if (isEdit) {
+      await productService.updateAttachment(productId, editingAttachment.value.id, payload);
+    } else {
+      await productService.createAttachment(productId, payload);
+    }
+    ElMessage.success('附件已儲存');
+    showAttachmentDialog.value = false;
+    await fetchAttachments();
+  } catch (err) {
+    const data = err.response?.data;
+    if (err.response?.status === 422) {
+      attachmentErrors.value = data?.errors || {};
+      const firstLocaleKey = Object.keys(attachmentErrors.value).find(k => /^(title|files)\.[^.]+$/.test(k));
+      if (firstLocaleKey) attachmentActiveTab.value = firstLocaleKey.split('.').slice(1).join('.');
+      const msgs = Object.values(attachmentErrors.value).flat();
+      ElMessage.error(msgs.length ? msgs.join('；') : (data?.message || '儲存附件失敗'));
+    } else {
+      ElMessage.error(data?.message || '儲存附件失敗：' + err.message);
+    }
+  } finally {
+    isSavingAttachment.value = false;
+  }
+};
+
+const deleteAttachment = async (att) => {
+  try {
+    await ElMessageBox.confirm('確定要刪除此附件（含所有語系檔案）嗎？', proxy.$t('admin.messages.warning'), { type: 'warning' });
+    await productService.deleteAttachment(currentProduct.value.id, att.id);
+    attachments.value = attachments.value.filter(a => a.id !== att.id);
+    ElMessage.success('附件已刪除');
+  } catch (err) {
+    if (err !== 'cancel') ElMessage.error(err.response?.data?.message || proxy.$t('admin.messages.delete_failed'));
+  }
+};
+
+const removeAttachmentLocaleFile = async (locale) => {
+  const att = editingAttachment.value;
+  if (!att) return;
+  try {
+    await ElMessageBox.confirm(`確定要移除 ${locale} 語系的檔案嗎？`, proxy.$t('admin.messages.warning'), { type: 'warning' });
+    removingLocale.value = locale;
+    await productService.deleteAttachmentFile(currentProduct.value.id, att.id, locale);
+    editingAttachment.value = { ...att, files: (att.files || []).filter(f => f.locale !== locale) };
+    ElMessage.success('已移除該語系檔案');
+    await fetchAttachments();
+  } catch (err) {
+    if (err === 'cancel') return;
+    const data = err.response?.data;
+    const msg = data?.errors?.file?.[0] || data?.message || err.message;
+    attachmentErrors.value = data?.errors || {};
+    ElMessage.error(msg);
+  } finally {
+    removingLocale.value = '';
   }
 };
 
@@ -679,10 +885,90 @@ onMounted(async () => {
             </div>
           </div>
         </el-form-item>
+
+        <!-- PDF Attachments (只在產品已存在時顯示) -->
+        <el-form-item v-if="isEditing && currentProduct?.id" label="附件">
+          <div style="width: 100%;" v-loading="isAttachmentsLoading">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+              <el-button type="primary" plain size="small" :icon="Plus" :disabled="attachments.length >= ATTACHMENT_MAX_COUNT"
+                @click="openAttachmentDialog()">新增附件</el-button>
+              <span style="font-size: 12px; color: #909399;">僅限 PDF，單檔上限 10 MB，每個產品最多 10 份（{{ attachments.length }}/{{ ATTACHMENT_MAX_COUNT }}）</span>
+            </div>
+            <div v-if="attachments.length === 0 && !isAttachmentsLoading" style="color: #909399; font-size: 13px;">尚無附件</div>
+            <div v-for="att in attachments" :key="att.id"
+              style="border: 1px solid #dcdfe6; border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; display: flex; gap: 12px; align-items: flex-start;">
+              <div style="flex: 1; min-width: 0;">
+                <div v-for="l in languages" :key="l.code" v-show="attachmentTitleText(att, l.code) || attachmentFile(att, l.code)"
+                  style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; line-height: 28px;">
+                  <el-tag size="small" type="info">{{ l.code }}</el-tag>
+                  <span style="font-weight: 600;">{{ attachmentTitleText(att, l.code) || '（未填標題）' }}</span>
+                  <a v-if="attachmentFile(att, l.code)" :href="attachmentFile(att, l.code).url" target="_blank" rel="noopener"
+                    style="text-decoration: none;">
+                    <el-tag size="small" type="success" effect="plain">
+                      {{ attachmentFile(att, l.code).original_name }}（{{ attachmentFile(att, l.code).human_size || formatFileSize(attachmentFile(att, l.code).size) }}）
+                    </el-tag>
+                  </a>
+                </div>
+              </div>
+              <div style="white-space: nowrap;">
+                <el-button type="primary" link @click="openAttachmentDialog(att)">{{ $t('admin.actions.edit') }}</el-button>
+                <el-button type="danger" link @click="deleteAttachment(att)">{{ $t('admin.actions.delete') }}</el-button>
+              </div>
+            </div>
+          </div>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="showDialog = false">{{ $t('admin.actions.cancel') }}</el-button>
         <el-button type="primary" @click="saveProduct" :loading="isSubmitting">{{ $t('admin.actions.save') }}</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- Attachment Dialog -->
+    <el-dialog v-model="showAttachmentDialog" :title="editingAttachment ? '編輯附件' : '新增附件'" width="560px" append-to-body destroy-on-close>
+      <el-alert type="info" :closable="false" show-icon style="margin-bottom: 12px;"
+        title="僅限 PDF，單檔上限 10 MB，每個產品最多 10 份" />
+      <el-alert v-if="generalAttachmentErrors.length" type="error" :closable="false" show-icon style="margin-bottom: 12px;"
+        :title="generalAttachmentErrors.join('；')" />
+      <el-tabs v-model="attachmentActiveTab">
+        <el-tab-pane v-for="l in languages" :key="l.code" :name="l.code">
+          <template #label>
+            <span :style="tabHasError(l.code) ? 'color: #f56c6c;' : ''">{{ l.name }}<span v-if="l.code === defaultLocale"> *</span></span>
+          </template>
+          <el-form label-width="80px" @submit.prevent>
+            <el-form-item label="標題" :required="l.code === defaultLocale" :error="errorsFor(l.code, 'title').join('；')">
+              <el-input v-model="attachmentTitles[l.code]" maxlength="255" :placeholder="l.code === defaultLocale ? '必填' : '選填'" />
+            </el-form-item>
+            <el-form-item label="PDF 檔案" :error="errorsFor(l.code, 'files').join('；')">
+              <div style="width: 100%;">
+                <div v-if="editingAttachment && attachmentFile(editingAttachment, l.code)"
+                  style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+                  <a :href="attachmentFile(editingAttachment, l.code).url" target="_blank" rel="noopener">
+                    {{ attachmentFile(editingAttachment, l.code).original_name }}
+                  </a>
+                  <span style="color: #909399; font-size: 12px;">
+                    {{ attachmentFile(editingAttachment, l.code).human_size || formatFileSize(attachmentFile(editingAttachment, l.code).size) }}
+                  </span>
+                  <el-tooltip :disabled="editingAttachment.files.length > 1" content="附件至少需保留一個檔案" placement="top">
+                    <span>
+                      <el-button type="danger" link size="small" :disabled="editingAttachment.files.length <= 1"
+                        :loading="removingLocale === l.code" @click="removeAttachmentLocaleFile(l.code)">移除此語系檔案</el-button>
+                    </span>
+                  </el-tooltip>
+                </div>
+                <el-upload :ref="(el) => setUploadRef(l.code, el)" :auto-upload="false" :limit="1" accept=".pdf,application/pdf"
+                  :on-change="(f) => onAttachmentFileChange(l.code, f)" :on-remove="() => onAttachmentFileRemove(l.code)"
+                  :on-exceed="(files) => onAttachmentFileExceed(l.code, files)">
+                  <el-button size="small">{{ editingAttachment && attachmentFile(editingAttachment, l.code) ? '選擇 PDF（取代現有檔案）' : '選擇 PDF' }}</el-button>
+                </el-upload>
+              </div>
+            </el-form-item>
+          </el-form>
+        </el-tab-pane>
+      </el-tabs>
+      <template #footer>
+        <el-button @click="showAttachmentDialog = false">{{ $t('admin.actions.cancel') }}</el-button>
+        <el-button type="primary" :loading="isSavingAttachment" @click="saveAttachment">{{ $t('admin.actions.save') }}</el-button>
       </template>
     </el-dialog>
 
@@ -724,6 +1010,6 @@ onMounted(async () => {
 </template>
 
 <script>
-import { Delete, ArrowDown, MagicStick } from '@element-plus/icons-vue';
-export default { setup() { return { Delete, ArrowDown, MagicStick }; } };
+import { Delete, ArrowDown, MagicStick, Plus } from '@element-plus/icons-vue';
+export default { setup() { return { Delete, ArrowDown, MagicStick, Plus }; } };
 </script>

@@ -74,6 +74,14 @@ Route::middleware(['auth:sanctum', 'active', 'role:super-admin|admin|manager|edi
     Route::put('/products/{product}/images/{image}/primary', [App\Http\Controllers\Api\ProductImageController::class, 'setPrimary']);
     Route::put('/products/{product}/images/reorder', [App\Http\Controllers\Api\ProductImageController::class, 'reorder']);
 
+    // Product PDF attachments
+    $attachments = App\Http\Controllers\Api\ProductAttachmentController::class;
+    Route::get('/products/{product}/attachments', [$attachments, 'index'])->name('api.products.attachments.index');
+    Route::post('/products/{product}/attachments', [$attachments, 'store'])->name('api.products.attachments.store');
+    Route::post('/products/{product}/attachments/{attachment}', [$attachments, 'update'])->name('api.products.attachments.update');
+    Route::delete('/products/{product}/attachments/{attachment}', [$attachments, 'destroy'])->name('api.products.attachments.destroy');
+    Route::delete('/products/{product}/attachments/{attachment}/files/{locale}', [$attachments, 'destroyFile'])->name('api.products.attachments.files.destroy');
+
     // Banners
     Route::get('/banners', [App\Http\Controllers\Api\BannerController::class, 'index']);
     Route::post('/banners', [App\Http\Controllers\Api\BannerController::class, 'store']);

@@ -212,6 +212,11 @@ docker compose exec laravel.test npm run build
 
 > 登入使用的是**帳號（username）**，不是 email。上線前務必更換預設密碼。
 
+**產品 PDF 附件**：後台產品編輯頁的「附件」區塊可為每個產品上傳多份 PDF，標題與檔案依語系（中／英）各自提供，前台產品詳情頁公開下載，缺少當前語系的檔案時回退預設語系。檔案存放在 `storage/app/public/product-attachments/`（需已執行 `php artisan storage:link`）。
+- 單檔上限預設 10 MB、每個產品預設 10 份，可在 `.env` 調整：`PRODUCT_ATTACHMENT_MAX_KB=10240`、`PRODUCT_ATTACHMENT_MAX_PER_PRODUCT=10`。
+- 部署時請確認 PHP 的 `upload_max_filesize`、`post_max_size` 與 nginx 的 `client_max_body_size` **不小於**上述上限，否則大檔會上傳失敗（Sail 預設 100M，不受影響）。
+- 升級後請執行 `php artisan migrate`。
+
 **影片管理**：後台「影片管理」可貼上 YouTube 網址新增影片（含名稱、簡介與 SEO 欄位），前台在 `/videos` 顯示。需要 `video.manage` 權限（`super-admin`、`manager`、`editor` 預設擁有）。既有環境升級後請執行 `php artisan migrate` 與 `php artisan db:seed --class=RolesAndPermissionsSeeder`（可重複執行）。
 
 ### 步驟 11（選用）：設定 AI 金鑰

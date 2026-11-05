@@ -48,6 +48,23 @@ class Language extends Model
     /**
      * Get the default language (Cached).
      */
+    public static function defaultCode(): string
+    {
+        return static::getDefault()?->code ?? 'zh-TW';
+    }
+
+    /**
+     * Codes of active languages, or the zh-TW/en pair when none are configured.
+     *
+     * @return array<int, string>
+     */
+    public static function activeCodes(): array
+    {
+        $codes = static::getActive()->pluck('code')->all();
+
+        return $codes ?: ['zh-TW', 'en'];
+    }
+
     public static function getDefault()
     {
         return Cache::rememberForever('default_language', function () {

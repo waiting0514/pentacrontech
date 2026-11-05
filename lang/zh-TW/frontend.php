@@ -209,6 +209,8 @@ return [
         'details' => '詳情',
         'specifications' => '產品規格',
         'related' => '相關產品',
+        'downloads' => '下載資料',
+        'download_pdf' => '下載 PDF',
         'no_products' => '目前沒有產品',
         'add_to_cart' => '加入購物車',
         'buy_now' => '立即購買',

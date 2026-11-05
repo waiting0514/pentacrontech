@@ -58,7 +58,7 @@ class ProductController extends Controller
     {
         $site = SiteSetting::current();
         
-        $product = Product::with(['primaryImage', 'images'])->findOrFail($id);
+        $product = Product::with(['primaryImage', 'images', 'attachments.files'])->findOrFail($id);
 
         // Get related products (exclude current)
         $relatedProducts = Product::with(['primaryImage', 'images'])->where('id', '!=', $id)

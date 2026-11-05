@@ -209,6 +209,8 @@ return [
         'details' => 'Details',
         'specifications' => 'Specifications',
         'related' => 'Related Products',
+        'downloads' => 'Downloads',
+        'download_pdf' => 'Download PDF',
         'no_products' => 'No products available',
         'add_to_cart' => 'Add to Cart',
         'buy_now' => 'Buy Now',
