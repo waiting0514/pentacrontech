@@ -13,5 +13,20 @@
   },
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "agent",
+            "agent": "test-runner",
+            "if": "echo \"${tool.args.command}\" | grep -E -q 'openspec apply|opsx:ff|openspec ff'",
+            "prompt": "偵測到 OpenSpec 已更新代碼。請依照你的職責，針對本次修改的代碼檔案，自動撰寫對應的測試案例、執行測試並確保通過。"
+          }
+        ]
+      }
+    ]
   }
 }
