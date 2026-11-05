@@ -536,12 +536,23 @@ const onAttachmentFileChange = (locale, uploadFile) => {
     return;
   }
   attachmentFiles.value = { ...attachmentFiles.value, [locale]: uploadFile.raw };
+  clearFileError(locale);
 };
 
 const onAttachmentFileRemove = (locale) => {
   const next = { ...attachmentFiles.value };
   delete next[locale];
   attachmentFiles.value = next;
+  clearFileError(locale);
+};
+
+// 重新選檔或移除檔案後，清除該語系上一次伺服器回傳的檔案錯誤
+const clearFileError = (locale) => {
+  const key = `files.${locale}`;
+  if (!(key in attachmentErrors.value)) return;
+  const next = { ...attachmentErrors.value };
+  delete next[key];
+  attachmentErrors.value = next;
 };
 
 // 已選一個檔案後再選：以新檔取代（limit 1）
