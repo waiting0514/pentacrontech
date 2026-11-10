@@ -402,7 +402,7 @@ document.addEventListener('DOMContentLoaded', function () {
         'url' => url('/'),
         'logo' => $site?->logo_url ?? asset('images/logo.png'),
     ],
-], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) !!}
 </script>
 <script type="application/ld+json">
 {!! json_encode([
@@ -412,6 +412,6 @@ document.addEventListener('DOMContentLoaded', function () {
         ['@type' => 'ListItem', 'position' => 1, 'name' => __('frontend.common.home'), 'item' => url('/')],
         ['@type' => 'ListItem', 'position' => 2, 'name' => __('frontend.about.title')],
     ],
-], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) !!}
 </script>
 @endpush

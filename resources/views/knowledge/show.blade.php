@@ -119,7 +119,7 @@
             ->filter()
             ->values()
             ->toArray(),
-    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) !!}
     </script>
     @break
 
@@ -139,7 +139,7 @@
                 'text' => strip_tags($step),
             ])
             ->toArray(),
-    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) !!}
     </script>
     @break
 
@@ -159,7 +159,7 @@
             'name' => $site?->name ?? config('app.name'),
             'logo' => ['@type' => 'ImageObject', 'url' => $site?->logo_url ?? asset('images/logo.png')],
         ],
-    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) !!}
     </script>
 @endswitch
 
@@ -173,6 +173,6 @@
         $article->category ? ['@type' => 'ListItem', 'position' => 3, 'name' => $article->category->name, 'item' => lroute('knowledge.category', ['categorySlug' => $article->category->slug])] : null,
         ['@type' => 'ListItem', 'position' => $article->category ? 4 : 3, 'name' => $article->title],
     ]),
-], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) !!}
 </script>
 @endpush

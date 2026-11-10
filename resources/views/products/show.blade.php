@@ -285,7 +285,7 @@
         'price' => $product->price,
         'availability' => 'https://schema.org/InStock',
     ],
-], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) !!}
 </script>
 <script type="application/ld+json">
 {!! json_encode([
@@ -296,6 +296,6 @@
         ['@type' => 'ListItem', 'position' => 2, 'name' => __('frontend.product.title'), 'item' => lroute('products.index')],
         ['@type' => 'ListItem', 'position' => 3, 'name' => $product->name],
     ],
-], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) !!}
 </script>
 @endpush

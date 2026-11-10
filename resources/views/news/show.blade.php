@@ -20,7 +20,7 @@
         <header class="mb-10">
             <div class="ix-n-meta mb-5">
                 <time datetime="{{ $news->published_at?->toISOString() }}">
-                    {{ $news->published_at?->format('Y年m月d日') }}
+                    {{ $news->published_at?->format('M j, Y') }}
                 </time>
                 @if($news->category)
                 <b>{{ $news->category->name }}</b>
@@ -100,7 +100,7 @@
             'url' => $site?->logo_url ?? asset('images/logo.png'),
         ],
     ],
-], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) !!}
 </script>
 <script type="application/ld+json">
 {!! json_encode([
@@ -111,6 +111,6 @@
         ['@type' => 'ListItem', 'position' => 2, 'name' => __('frontend.news.title'), 'item' => lroute('news.index')],
         ['@type' => 'ListItem', 'position' => 3, 'name' => $news->title],
     ],
-], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) !!}
 </script>
 @endpush

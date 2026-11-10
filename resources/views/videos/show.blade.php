@@ -84,7 +84,7 @@
     'embedUrl' => $video->embed_url,
     'contentUrl' => $video->youtube_url,
     'uploadDate' => $video->created_at?->toIso8601String(),
-], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) !!}
 </script>
 <script type="application/ld+json">
 {!! json_encode([
@@ -95,6 +95,6 @@
         ['@type' => 'ListItem', 'position' => 2, 'name' => __('frontend.video.title'), 'item' => lroute('videos.index')],
         ['@type' => 'ListItem', 'position' => 3, 'name' => $video->title],
     ],
-], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) !!}
 </script>
 @endpush

@@ -49,14 +49,17 @@ class ProductAttachmentController extends Controller
 
         $this->assertKnownLocales($validated['files'] ?? []);
 
-        $attachment = DB::transaction(function () use ($product, $validated, $request) {
+        $newPaths = [];
+        $oldPaths = [];
+
+        $attachment = $this->runWithFileCleanup($newPaths, $oldPaths, function () use ($product, $validated, $request, &$newPaths, &$oldPaths) {
             $attachment = $product->attachments()->create([
                 'title' => array_filter($validated['title'], fn ($v) => filled($v)),
                 'sort_order' => $validated['sort_order'] ?? $product->attachments()->count(),
             ]);
 
             foreach ($request->file('files', []) as $locale => $file) {
-                $this->saveFile($attachment, $locale, $file);
+                $this->saveFile($attachment, $locale, $file, $newPaths, $oldPaths);
             }
 
             return $attachment;
@@ -83,7 +86,10 @@ class ProductAttachmentController extends Controller
 
         $this->assertKnownLocales($validated['files'] ?? []);
 
-        DB::transaction(function () use ($attachment, $validated, $request) {
+        $newPaths = [];
+        $oldPaths = [];
+
+        $this->runWithFileCleanup($newPaths, $oldPaths, function () use ($attachment, $validated, $request, &$newPaths, &$oldPaths) {
             if (isset($validated['title'])) {
                 // Spatie merges per-locale on assignment; clear first so blanked locales are removed.
                 $attachment->forgetTranslations('title')
@@ -95,7 +101,7 @@ class ProductAttachmentController extends Controller
             $attachment->save();
 
             foreach ($request->file('files', []) as $locale => $file) {
-                $this->saveFile($attachment, $locale, $file);
+                $this->saveFile($attachment, $locale, $file, $newPaths, $oldPaths);
             }
         });
 
@@ -177,15 +183,40 @@ class ProductAttachmentController extends Controller
     }
 
     /**
-     * Store a PDF under a random name and create/replace the locale record.
-     * The old physical file is removed only after the record points to the new one.
+     * Run $callback in a transaction. On failure the newly stored files are removed
+     * (the DB rolls back to the old paths, which still exist); on success the replaced
+     * old files are removed only after the commit.
+     *
+     * @param  array<int, string>  $newPaths  collected by saveFile()
+     * @param  array<int, string>  $oldPaths  collected by saveFile()
      */
-    private function saveFile(ProductAttachment $attachment, string $locale, UploadedFile $file): void
+    private function runWithFileCleanup(array &$newPaths, array &$oldPaths, callable $callback): mixed
+    {
+        try {
+            $result = DB::transaction($callback);
+        } catch (\Throwable $e) {
+            Storage::disk('public')->delete($newPaths);
+            throw $e;
+        }
+
+        Storage::disk('public')->delete($oldPaths);
+
+        return $result;
+    }
+
+    /**
+     * Store a PDF under a random name and create/replace the locale record.
+     * The replaced file's path is collected in $oldPaths; the caller deletes it after commit.
+     */
+    private function saveFile(ProductAttachment $attachment, string $locale, UploadedFile $file, array &$newPaths, array &$oldPaths): void
     {
         $path = $file->store("product-attachments/{$attachment->product_id}", 'public');
+        $newPaths[] = $path;
 
         $existing = $attachment->files()->where('locale', $locale)->first();
-        $oldPath = $existing?->path;
+        if ($existing?->path) {
+            $oldPaths[] = $existing->path;
+        }
 
         ProductAttachmentFile::updateOrCreate(
             ['attachment_id' => $attachment->id, 'locale' => $locale],
@@ -195,9 +226,5 @@ class ProductAttachmentController extends Controller
                 'size' => $file->getSize(),
             ]
         );
-
-        if ($oldPath) {
-            Storage::disk('public')->delete($oldPath);
-        }
     }
 }

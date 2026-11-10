@@ -20,7 +20,7 @@
 
 <x-page-hero
     :title="$currentCategory?->name ?: __('frontend.product.all_categories')"
-    :subtitle="$currentCategory ? (__('frontend.product.explore_category_range') ?: '探索此分類精選商品') : (__('frontend.product.explore_full_range') ?: '探索完整的產品系列')"
+    :subtitle="$currentCategory ? (__('frontend.product.explore_category_range')) : (__('frontend.product.explore_full_range'))"
     image="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1920&q=80" />
 
 <section class="ix-sec bg-white" style="padding-top: clamp(48px, 6vw, 88px); padding-bottom: clamp(56px, 8vw, 120px);">
@@ -75,7 +75,7 @@
                             <svg class="w-5 h-5 text-eblue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                             </svg>
-                            {{ __('frontend.product.title') ?: '產品分類' }}
+                            {{ __('frontend.product.title') }}
                         </h2>
                         
                         {{-- Mobile Scroll Container with Right Fade Overlay --}}
@@ -250,6 +250,6 @@
         ['@type' => 'ListItem', 'position' => 1, 'name' => __('frontend.common.home'), 'item' => url('/')],
         ['@type' => 'ListItem', 'position' => 2, 'name' => $currentCategory ? $currentCategory->name : __('frontend.product.title')],
     ],
-], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) !!}
 </script>
 @endpush

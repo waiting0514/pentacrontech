@@ -374,6 +374,6 @@ document.addEventListener('DOMContentLoaded', function () {
         'contactType' => 'customer service',
     ],
     'sameAs' => array_values(array_filter($site?->social_links ?? [])),
-], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) !!}
 </script>
 @endpush
