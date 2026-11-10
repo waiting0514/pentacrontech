@@ -1,0 +1,30 @@
+# 站台部署設定範本。複製為 project.conf 後填入實際值（project.conf 含密碼，已被 .gitignore 排除）：
+#   cp project.conf.example project.conf && nano project.conf
+#
+# 一個站一份設定檔，可放在任何位置，執行時以第一個參數指定：
+#   bash project-init.sh /path/to/site.conf
+# 不給參數時，預設讀取與腳本同資料夾的 project.conf。
+
+# 網域（Nginx server_name 會是「DOMAIN www.DOMAIN」）
+DOMAIN="example.com"
+
+# 部署資料夾：需與該專案 .github/workflows/deploy.yml 的 APP_DIR 一致
+APP_DIR="/var/www/example.com"
+
+# 程式碼來源（私有 repo 建議用 Deploy Key 的 SSH 網址：git@github.com:帳號/repo.git）
+GITHUB_REPO="https://github.com/帳號/repo.git"
+
+# 資料庫：每個站各自一組，名稱不可與其他站重複。
+# 密碼建議只用英文字母與數字（會寫進 mysql 指令與 .env）
+DB_NAME="example"
+DB_USER="example_user"
+DB_PASS="請填隨機密碼"
+
+# 此專案 GitHub Actions 部署用的 SSH 公鑰（對應 repo secret LINODE_SSH_KEY 的私鑰）
+GITHUB_ACTIONS_PUBKEY="ssh-ed25519 AAAA... github-actions-deploy-example"
+
+# PHP 版本（需與 server-init.sh、該專案 deploy.yml 的 reload 指令一致）
+PHP_VERSION="8.4"
+
+# 初始化 Seeder 類別；留空則略過
+SEED_CLASS="ProductionSeeder"

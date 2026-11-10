@@ -101,10 +101,12 @@ chmod 600 /home/$DEPLOY_USER/.ssh/authorized_keys
 chown -R $DEPLOY_USER:$DEPLOY_USER /home/$DEPLOY_USER/.ssh
 
 # deployer sudo 權限（不需密碼）
-cat > /etc/sudoers.d/deployer << EOF
-$DEPLOY_USER ALL=(ALL) NOPASSWD: /bin/systemctl reload php${PHP_VERSION}-fpm
-EOF
+# 只追加缺少的那一行，不覆蓋整個檔案（project-init.sh 會把各站的 storage 權限寫在同一個檔案，重跑本腳本不能清掉）
+touch /etc/sudoers.d/deployer
+SUDO_RELOAD="$DEPLOY_USER ALL=(ALL) NOPASSWD: /bin/systemctl reload php${PHP_VERSION}-fpm"
+grep -qxF "$SUDO_RELOAD" /etc/sudoers.d/deployer || echo "$SUDO_RELOAD" >> /etc/sudoers.d/deployer
 chmod 440 /etc/sudoers.d/deployer
+visudo -cf /etc/sudoers.d/deployer
 
 # ------------------------------------------------------------------------------
 # 9. 設定防火牆

@@ -1,21 +1,23 @@
 # 部署說明文件
 
-> ## ⚠️ 部署前必改：部署資料夾位置與專案名稱
+> ## ⚠️ 部署前必改：每個站一份設定檔，路徑要一致
 >
-> 本文件與部署腳本預設把專案部署在 **`/var/www/minzheco`**，網域為 `minzheco.com`，資料庫為 `minzheco` / `minzheco_user`。
-> 換伺服器路徑、換網域，或把這套流程套到其他專案時，**下列位置必須一起修改，路徑要完全一致**，否則部署會失敗或寫到錯的資料夾：
+> 部署腳本不再寫死站台資料，**每個站的設定集中在 `deploy/project.conf`**（由 `project.conf.example` 複製而來，含資料庫密碼，已被 `.gitignore` 排除，不要 commit）。
+> 同一台伺服器放多個站時，每個站各自一份設定檔，同一支腳本重複使用（見下方「新增另一個站」）。
 >
-> | 檔案 | 要改的地方 |
+> 下列位置的**網域與資料夾必須一致**，否則部署會失敗或寫到錯的資料夾：
+>
+> | 位置 | 要設定的內容 |
 > |---|---|
-> | `.github/workflows/deploy.yml` | 最上方 `env.APP_DIR`（workflow 內所有路徑都引用它）；`sudo systemctl reload php8.4-fpm` 的 PHP 版本 |
-> | `deploy/project-init.sh` | `APP_DIR`、`GITHUB_REPO`、`DB_NAME`、`DB_USER`、`DB_PASS`、`GITHUB_ACTIONS_PUBKEY` |
-> | `deploy/nginx.conf` | `server_name`、`root`（= `APP_DIR/public`）、`fastcgi_pass` 的 PHP 版本、log 檔名 |
-> | `deploy/server-init.sh` | `PHP_VERSION`（需與 `deploy.yml`、`nginx.conf` 一致） |
-> | 伺服器上的 `.env` | `APP_URL`、`DB_DATABASE`、`DB_USERNAME`、`DB_PASSWORD` |
-> | 伺服器上的 crontab | `cd /var/www/minzheco` 改成新路徑 |
-> | 本文件 | 下方指令中的 `/var/www/minzheco`、`minzheco.com`、IP `172.237.12.75` 請替換成實際值再執行 |
+> | `deploy/project.conf` | `DOMAIN`、`APP_DIR`、`GITHUB_REPO`、`DB_NAME`、`DB_USER`、`DB_PASS`、`GITHUB_ACTIONS_PUBKEY`、`PHP_VERSION`、`SEED_CLASS` |
+> | `.github/workflows/deploy.yml` | 最上方 `env.APP_DIR`（需等於 `project.conf` 的 `APP_DIR`）；`sudo systemctl reload php8.4-fpm` 的 PHP 版本 |
+> | `deploy/server-init.sh` | `PHP_VERSION`（需與 `project.conf`、`deploy.yml` 一致） |
+> | 伺服器上的 `.env` | `APP_URL`、`DB_CONNECTION=mysql`、`DB_DATABASE`、`DB_USERNAME`、`DB_PASSWORD`（需與 `project.conf` 一致，腳本會檢查） |
+> | 伺服器上的 crontab | `cd <APP_DIR>` |
+> | 本文件 | 下方指令中的 `/var/www/minzheco`、`minzheco.com`、IP `172.237.12.75` 是範例，請替換成實際值 |
 >
-> 另外，`/etc/sudoers.d/deployer` 內的 storage 權限設定是由 `project-init.sh` 依 `APP_DIR` 產生的；若專案已初始化後才改路徑，記得同步修改該檔案（見 Step 2 注意事項）。
+> Nginx 設定由 `project-init.sh` 依 `nginx.conf.template` 自動產生，不需要手動修改範本。
+> `/etc/sudoers.d/deployer` 內的 storage 權限也由 `project-init.sh` 依 `APP_DIR` 追加；專案初始化後才改路徑時，記得同步修改該檔案（見 Step 2 注意事項）。
 
 ## 環境架構
 
@@ -144,18 +146,23 @@ chown -R deployer:deployer /home/deployer/.ssh
 
 ### Step 6｜設定 Nginx
 
+**使用 `project-init.sh` 時不需要手動做**，腳本最後一步會依 `nginx.conf.template` 產生 `/etc/nginx/sites-available/<DOMAIN>`、建立 `sites-enabled` 連結並 reload（已存在的設定不會被覆蓋，也不會動到其他站）。
+
+手動設定時，把範本的 `__DOMAIN__`、`__APP_DIR__`、`__PHP_VERSION__` 換成實際值：
+
 ```bash
-sudo bash -c 'cat > /etc/nginx/sites-available/minzheco' << 'EOF'
-# 貼上 deploy/nginx.conf 的內容
-EOF
-sudo ln -s /etc/nginx/sites-available/minzheco /etc/nginx/sites-enabled/minzheco
-sudo rm -f /etc/nginx/sites-enabled/default
+DOMAIN=minzheco.com; APP_DIR=/var/www/minzheco; PHP_VERSION=8.4
+sed -e '/^#/d' -e "s#__DOMAIN__#$DOMAIN#g" -e "s#__APP_DIR__#$APP_DIR#g" -e "s#__PHP_VERSION__#$PHP_VERSION#g" \
+  deploy/nginx.conf.template | sudo tee /etc/nginx/sites-available/$DOMAIN > /dev/null
+sudo ln -sfn /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/$DOMAIN
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
+> ⚠️ 只有在**確定不會影響其他站**時才移除 `sites-enabled/default`。多站伺服器請先 `ls /etc/nginx/sites-enabled/` 確認每個站的 `server_name` 都不同，不要刪除其他站的連結。
+
 ### Step 7｜Clone 專案並設定 .env
 
-> 💡 Step 3、7、8、9 也可以改用 `deploy/project-init.sh` 一次完成。先修改腳本開頭的 `APP_DIR`、`GITHUB_REPO`、資料庫帳密與公鑰，再以 root 執行 `bash project-init.sh`。
+> 💡 Step 3、6、7、8、9 也可以改用 `deploy/project-init.sh` 一次完成：複製 `project.conf.example` 為 `project.conf` 並填好，再以 root 執行 `bash project-init.sh`（或 `bash project-init.sh /path/to/site.conf` 指定設定檔）。
 
 ```bash
 cd /var/www/minzheco
@@ -255,6 +262,40 @@ crontab -u deployer -e
 
 ---
 
+## 新增另一個站（同一台伺服器）
+
+同一台 Linode 可以放多個 Laravel 站，每個站各自擁有：專案資料夾、資料庫與帳號、`.env`、Nginx 站台檔、HTTPS 憑證、GitHub repo 與 Secrets。共用的是 Nginx、PHP-FPM、MySQL 與 `deployer` 使用者。**不需要再跑 `server-init.sh`。**
+
+1. **DNS**：新網域的 `@` 與 `www` A 記錄指到本機 IP。
+2. **準備設定檔**（在本機）：
+   ```bash
+   cp deploy/project.conf.example deploy/新站.local.conf
+   # 填入 DOMAIN、APP_DIR、GITHUB_REPO、DB_NAME、DB_USER、DB_PASS、GITHUB_ACTIONS_PUBKEY
+   ```
+   `*.local.conf` 已被 `.gitignore` 排除。資料庫名稱、帳號不可與其他站重複；密碼建議 32 字元英數字（`openssl rand -hex 16`）。
+3. **上傳腳本與設定檔**：
+   ```bash
+   scp deploy/project-init.sh deploy/nginx.conf.template deploy/新站.local.conf root@伺服器IP:/tmp/
+   ```
+4. **在伺服器執行**：
+   ```bash
+   bash /tmp/project-init.sh /tmp/新站.local.conf
+   ```
+   腳本會建立資料夾與資料庫、clone、檢查 `.env`、migrate、seed、build、設定權限與 sudoers，並產生啟用 Nginx 站台。**會先檢查是否有其他已啟用的站台使用同一個網域**，有就中止；`nginx -t` 失敗會自動撤銷這個站台，不影響其他站。
+   第一次會停下來讓你編輯 `.env`（`DB_CONNECTION=mysql`、`DB_*`、`APP_URL`），改完按 Enter。
+5. **HTTPS**（DNS 生效後）：`certbot --nginx -d 新網域 -d www.新網域`
+6. **新站的 GitHub repo**：建立 4 個 Secrets（見 Step 5）、把 `deploy.yml` 的 `APP_DIR` 改成與設定檔相同，再到 Actions 手動跑一次部署驗證。
+7. **用完刪除** `/tmp` 內的設定檔（含密碼）：`rm /tmp/project-init.sh /tmp/新站.local.conf`
+
+注意事項：
+
+- 重複執行 `project-init.sh` 是安全的：已存在的資料庫、專案、`.env`、Nginx 設定、sudoers 行都會跳過；`APP_KEY` 已存在也不會重新產生（重新產生會讓已加密的資料無法解密）。
+- Nginx 站台檔一旦存在就**不會被覆蓋**，因為 certbot 會把 HTTPS 設定寫進去。要重新產生請先自行備份並刪除該檔。
+- 所有站共用同一個 PHP 版本與 `www-data`，站與站之間沒有系統層級隔離；若站台屬於互不信任的客戶，請改用獨立系統使用者與 PHP-FPM pool。
+- 2GB 記憶體的主機站數多時要留意 PHP-FPM `pm.max_children` 與 MySQL 記憶體。
+
+---
+
 ## 日常部署
 
 到 GitHub repo → Actions → **Deploy to Linode** → **Run workflow** 手動觸發，執行內容：
@@ -336,7 +377,7 @@ Workflow 名稱由檔案內的 `name` 欄位決定，目前設定為 `Deploy to 
 
 - 部署資料夾、網域、資料庫名稱：見本文件最上方「⚠️ 部署前必改」的完整清單
 - GitHub Secrets 名稱：每個專案各自一個 repo 時，名稱維持 `LINODE_*` 即可；只有在多個專案共用同一個 repo 或使用組織層級 Secrets 時，才需要加上專案名稱區分（如 `LINODE_PROJECTNAME_SSH_KEY`），並同步修改 workflow
-- PHP 版本視專案需求調整（`deploy.yml`、`server-init.sh`、`nginx.conf`、sudoers 要一致）
+- PHP 版本視專案需求調整（`deploy.yml`、`server-init.sh`、`project.conf`、sudoers 要一致）
 
 ---
 
@@ -348,7 +389,7 @@ Workflow 名稱由檔案內的 `name` 欄位決定，目前設定為 `Deploy to 
 
 **原因**: 開發環境用 Laravel Sail（PHP 8.5），`composer.lock` 鎖定了需要 PHP 8.4+ 的套件版本，但伺服器安裝的是 PHP 8.2。
 
-**解法**: 將伺服器 PHP 升級至 8.4，同時更新 `nginx.conf` 中的 socket 路徑和 `deploy.yml` 中的 PHP 版本設定。
+**解法**: 將伺服器 PHP 升級至 8.4，同時更新 Nginx 站台設定中的 socket 路徑（`nginx.conf.template` 的 `__PHP_VERSION__`）和 `deploy.yml` 中的 PHP 版本設定。
 
 ---
 
@@ -468,10 +509,12 @@ crontab -u deployer -e
 
 ```
 deploy/
-├── server-init.sh   # 伺服器初始化腳本（只需執行一次）
-├── project-init.sh  # 專案初始化腳本（建 DB、clone、seed、權限、sudoers）
-├── nginx.conf       # Nginx 設定範本
-└── README.md        # 本說明文件
+├── server-init.sh        # 伺服器初始化腳本（只需執行一次，重跑不會清掉其他站的 sudoers）
+├── project-init.sh       # 專案初始化腳本（建 DB、clone、seed、權限、sudoers、Nginx 站台）；多站共用
+├── project.conf.example  # 站台設定範本（複製為 project.conf 後填寫）
+├── project.conf          # 此站台的實際設定（含密碼，已被 .gitignore 排除，不進 git）
+├── nginx.conf.template   # Nginx 站台範本（__DOMAIN__ / __APP_DIR__ / __PHP_VERSION__）
+└── README.md             # 本說明文件
 
 .github/
 └── workflows/

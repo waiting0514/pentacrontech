@@ -28,3 +28,6 @@ Thumbs.db
 .agents/*
 .gemini/*
 .codex/*
+# 部署站台設定（含資料庫密碼）
+/deploy/project.conf
+/deploy/*.local.conf

@@ -1,11 +1,14 @@
+# Nginx 站台範本。project-init.sh 會把下列佔位符替換後，寫入 /etc/nginx/sites-available/__DOMAIN__：
+#   __DOMAIN__       網域（同時包含 www.__DOMAIN__）
+#   __APP_DIR__      部署資料夾（root 為 __APP_DIR__/public）
+#   __PHP_VERSION__  PHP-FPM 版本
 server {
     listen 80;
     listen [::]:80;
 
-    # 替換成你的 domain 或 IP
-    server_name pentacrontech.com www.pentacrontech.com;
+    server_name __DOMAIN__ www.__DOMAIN__;
 
-    root /var/www/pentacrontech.com/public;
+    root __APP_DIR__/public;
     index index.php;
 
     # 上傳檔案大小限制（配合圖片上傳功能）
@@ -25,7 +28,7 @@ server {
 
     # PHP-FPM
     location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php8.4-fpm.sock;
+        fastcgi_pass unix:/var/run/php/php__PHP_VERSION__-fpm.sock;
         fastcgi_index index.php;
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         include fastcgi_params;
@@ -38,6 +41,6 @@ server {
     }
 
     # 日誌
-    access_log /var/log/nginx/pentacrontech.com-access.log;
-    error_log  /var/log/nginx/pentacrontech.com-error.log;
+    access_log /var/log/nginx/__DOMAIN__-access.log;
+    error_log  /var/log/nginx/__DOMAIN__-error.log;
 }
