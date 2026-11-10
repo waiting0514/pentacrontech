@@ -10,7 +10,7 @@ concurrency:
 
 # 伺服器上的部署資料夾（換專案或改位置時修改這裡，並同步修改 deploy/ 底下的檔案）
 env:
-  APP_DIR: /var/www/minzheco
+  APP_DIR: /var/www/pentacrontech.com
 
 jobs:
   # ===========================================================================
@@ -176,8 +176,8 @@ jobs:
             # 執行 migration
             php artisan migrate --force
 
-            # 建立 storage symbolic link（已存在時略過）
-            php artisan storage:link || true
+            # 建立或修正 storage symbolic link（--force 會覆蓋指向錯誤路徑的舊連結）
+            php artisan storage:link --force || true
 
             # 清除並重新建立快取
             php artisan config:cache

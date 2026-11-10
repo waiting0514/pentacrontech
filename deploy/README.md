@@ -133,6 +133,15 @@ chown -R deployer:deployer /home/deployer/.ssh
 | `LINODE_PORT` | `22` |
 | `LINODE_SSH_KEY` | `linode_minzheco` 私鑰全文 |
 
+說明：
+
+- **只需要這 4 個**，`deploy.yml` 沒有引用其他 Secrets。資料庫密碼、`APP_KEY`、OpenAI 等 API key 都放在**伺服器的 `.env`**，不是 GitHub Secrets（rsync 也不會覆蓋 `.env`）。
+- **Secrets 屬於單一 repo，不會跨 repo 共用。** 新專案的 repo 要重新建立這 4 個（名稱維持相同即可，workflow 不用改）。
+- 同一台 Linode 的多個專案，`LINODE_HOST`、`LINODE_USER`、`LINODE_PORT` 通常相同。
+- `LINODE_SSH_KEY` 可以重用既有的部署私鑰（對應公鑰已在伺服器 `deployer` 的 `authorized_keys`），但建議**每個專案各產生一把**，一把外洩才不會影響其他專案。新的公鑰要填入 `project-init.sh` 的 `GITHUB_ACTIONS_PUBKEY`。
+- 貼私鑰時要包含 `-----BEGIN ... -----` 與 `-----END ... -----` 兩行，結尾保留換行，否則可能出現 `error in libcrypto`。
+- 同一台伺服器放多個專案時，`/etc/sudoers.d/deployer` 需要包含每個專案的 storage 路徑；`project-init.sh` 每跑一次會追加該專案的設定，不會覆蓋其他專案。
+
 ### Step 6｜設定 Nginx
 
 ```bash
@@ -326,7 +335,7 @@ Workflow 名稱由檔案內的 `name` 欄位決定，目前設定為 `Deploy to 
 **套用到其他專案時需修改的地方**：
 
 - 部署資料夾、網域、資料庫名稱：見本文件最上方「⚠️ 部署前必改」的完整清單
-- GitHub Secrets 名稱建議加上專案名稱區分（如 `LINODE_PROJECTNAME_SSH_KEY`）
+- GitHub Secrets 名稱：每個專案各自一個 repo 時，名稱維持 `LINODE_*` 即可；只有在多個專案共用同一個 repo 或使用組織層級 Secrets 時，才需要加上專案名稱區分（如 `LINODE_PROJECTNAME_SSH_KEY`），並同步修改 workflow
 - PHP 版本視專案需求調整（`deploy.yml`、`server-init.sh`、`nginx.conf`、sudoers 要一致）
 
 ---

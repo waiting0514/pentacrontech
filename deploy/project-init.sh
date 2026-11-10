@@ -9,10 +9,10 @@
 set -e
 
 # ⚠️ 部署資料夾：需與 .github/workflows/deploy.yml 的 APP_DIR、deploy/nginx.conf 的 root 一致
-APP_DIR="/var/www/minzheco"
+APP_DIR="/var/www/pentacrontech.com"
 GITHUB_REPO="https://你的TOKEN@github.com/waiting0514/prototype.git"
-DB_NAME="minzheco"
-DB_USER="minzheco_user"
+DB_NAME="pentacrontech"
+DB_USER="pentacrontech_user"
 DB_PASS="你的資料庫密碼"
 GITHUB_ACTIONS_PUBKEY="ssh-ed25519 AAAA填入此專案的GitHub Actions公鑰 github-actions-deploy"
 
