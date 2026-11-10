@@ -25,7 +25,9 @@
             </div>
         </div>
 
+        @php $hiddenNav = config('frontend.hidden_nav', []); @endphp
         <div class="ix-ft-cols">
+            @unless(in_array('products', $hiddenNav, true))
             <div>
                 <h4>{{ __('frontend.nav.products') }}</h4>
                 <ul>
@@ -35,6 +37,8 @@
                     <li><a href="{{ lroute('products.index') }}">{{ __('frontend.nav.all_products') }}</a></li>
                 </ul>
             </div>
+            @endunless
+            @unless(in_array('videos', $hiddenNav, true))
             <div>
                 <h4>{{ __('frontend.nav.videos') }}</h4>
                 <ul>
@@ -44,6 +48,7 @@
                     <li><a href="{{ lroute('videos.index') }}">{{ __('frontend.nav.all_videos') }}</a></li>
                 </ul>
             </div>
+            @endunless
             <div>
                 <h4>{{ __('frontend.nav.applications') }}</h4>
                 <ul>

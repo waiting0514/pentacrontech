@@ -50,11 +50,11 @@ class Language extends Model
      */
     public static function defaultCode(): string
     {
-        return static::getDefault()?->code ?? 'zh-TW';
+        return static::getDefault()?->code ?? 'en';
     }
 
     /**
-     * Codes of active languages, or the zh-TW/en pair when none are configured.
+     * Codes of active languages, or the en/zh-TW pair when none are configured.
      *
      * @return array<int, string>
      */
@@ -62,7 +62,7 @@ class Language extends Model
     {
         $codes = static::getActive()->pluck('code')->all();
 
-        return $codes ?: ['zh-TW', 'en'];
+        return $codes ?: ['en', 'zh-TW'];
     }
 
     public static function getDefault()

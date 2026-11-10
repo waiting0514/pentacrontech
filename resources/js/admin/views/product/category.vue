@@ -54,7 +54,7 @@ const ensureObject = (val) => {
             const parsed = JSON.parse(val);
             return typeof parsed === 'object' ? parsed : {};
         } catch (e) {
-            return { 'zh-TW': val };
+            return { en: val };
         }
     }
     return {};
@@ -139,7 +139,7 @@ const selectableCategories = computed(() => {
             .map(node => {
                 const mappedNode = {
                     value: node.id,
-                    label: typeof node.name === 'object' ? (node.name?.['zh-TW'] || node.name?.en) : node.name,
+                    label: typeof node.name === 'object' ? (node.name?.en || node.name?.['zh-TW']) : node.name,
                 };
                 
                 if (node.children && node.children.length > 0) {
@@ -288,7 +288,7 @@ onMounted(() => { languageStore.fetchLanguages(); fetchCategories(); });
       <el-table-column :label="$t('admin.categories.name')">
         <template #default="{ row }">
           <span style="font-weight: 500;">
-            {{ typeof row.name === 'object' ? (row.name?.['zh-TW'] || row.name?.en) : row.name }}
+            {{ typeof row.name === 'object' ? (row.name?.en || row.name?.['zh-TW']) : row.name }}
           </span>
           <el-tag v-if="!row.parent_id" size="small" type="success" style="margin-left: 8px;">主分類</el-tag>
           <el-tag v-else size="small" type="info" style="margin-left: 8px;">子分類</el-tag>
@@ -305,7 +305,7 @@ onMounted(() => { languageStore.fetchLanguages(); fetchCategories(); });
       <el-table-column :label="$t('admin.categories.url_slug')">
         <template #default="{ row }">
           <el-text type="info" size="small" style="font-family: monospace;">
-            {{ typeof row.slug === 'object' ? (row.slug?.['zh-TW'] || row.slug?.en) : row.slug }}
+            {{ typeof row.slug === 'object' ? (row.slug?.en || row.slug?.['zh-TW']) : row.slug }}
           </el-text>
         </template>
       </el-table-column>

@@ -40,7 +40,7 @@ const ensureObject = (val) => {
             const parsed = JSON.parse(val);
             return typeof parsed === 'object' ? parsed : {};
         } catch (e) {
-            return { 'zh-TW': val };
+            return { en: val };
         }
     }
     return {};
@@ -104,20 +104,20 @@ onMounted(() => { languageStore.fetchLanguages(); fetchCategories(); });
     <el-table :data="categories" border stripe>
       <el-table-column label="分類名稱">
         <template #default="{ row }">
-          {{ typeof row.name === 'object' ? (row.name?.['zh-TW'] || row.name?.en) : row.name }}
+          {{ typeof row.name === 'object' ? (row.name?.en || row.name?.['zh-TW']) : row.name }}
         </template>
       </el-table-column>
       <el-table-column label="URL Slug">
         <template #default="{ row }">
           <el-text type="info" size="small" style="font-family: monospace;">
-            {{ typeof row.slug === 'object' ? (row.slug?.['zh-TW'] || row.slug?.en) : row.slug }}
+            {{ typeof row.slug === 'object' ? (row.slug?.en || row.slug?.['zh-TW']) : row.slug }}
           </el-text>
         </template>
       </el-table-column>
       <el-table-column label="分類說明">
         <template #default="{ row }">
           <el-text type="info" size="small" class="line-clamp-1">
-            {{ typeof row.description === 'object' ? (row.description?.['zh-TW'] || row.description?.en || '-') : (row.description || '-') }}
+            {{ typeof row.description === 'object' ? (row.description?.en || row.description?.['zh-TW'] || '-') : (row.description || '-') }}
           </el-text>
         </template>
       </el-table-column>

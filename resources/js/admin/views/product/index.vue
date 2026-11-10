@@ -33,7 +33,7 @@ const isSubmitting = ref(false);
 const showTranslateDialog = ref(false);
 const isTranslating = ref(false);
 const translationTargets = ref([]);
-const translationSource = ref('zh-TW');
+const translationSource = ref('en');
 
 // Pending image previews (from AI tool)
 const pendingImagePreviews = ref([]);
@@ -208,7 +208,7 @@ const formattedCategories = computed(() => {
   const flattenTree = (nodes, depth = 0) => {
     nodes.forEach(node => {
       const prefix = depth > 0 ? '　'.repeat(depth - 1) + '├─ ' : '';
-      const name = typeof node.name === 'object' ? (node.name?.['zh-TW'] || node.name?.en || '') : node.name;
+      const name = typeof node.name === 'object' ? (node.name?.en || node.name?.['zh-TW'] || '') : node.name;
       list.push({
         ...node,
         displayName: prefix + name
@@ -462,14 +462,14 @@ const editingAttachment = ref(null); // null = 新增
 const attachmentTitles = ref({});
 const attachmentFiles = ref({}); // locale -> File（尚未上傳）
 const attachmentErrors = ref({});
-const attachmentActiveTab = ref('zh-TW');
+const attachmentActiveTab = ref('en');
 const attachmentUploadRefs = {};
 const isSavingAttachment = ref(false);
 const removingLocale = ref('');
 
 const defaultLocale = computed(() => {
   const d = languages.value.find(l => l.is_default) || languages.value[0];
-  return d ? d.code : 'zh-TW';
+  return d ? d.code : 'en';
 });
 
 const setUploadRef = (locale, el) => {
@@ -680,7 +680,7 @@ const handleAiCreate = async ({ imageFiles, data }) => {
 
 const fillFormWithParsedData = (data) => {
   const defaultLang = languages.value.find(l => l.is_default) || languages.value[0];
-  const defaultLocale = defaultLang ? defaultLang.code : 'zh-TW';
+  const defaultLocale = defaultLang ? defaultLang.code : 'en';
 
   form.value.name = { ...form.value.name, [defaultLocale]: data.name || '' };
 
@@ -786,13 +786,13 @@ onMounted(async () => {
       </el-table-column>
       <el-table-column :label="$t('admin.categories.name')">
         <template #default="{ row }">
-          <div>{{ row.name?.['zh-TW'] || row.name?.en || $t('admin.products.unnamed') }}</div>
+          <div>{{ row.name?.en || row.name?.['zh-TW'] || $t('admin.products.unnamed') }}</div>
           <div style="font-size: 12px; color: #909399;">{{ row.name?.en }}</div>
         </template>
       </el-table-column>
       <el-table-column label="Slug" width="180">
         <template #default="{ row }">
-          <el-text type="info" size="small" style="font-family: monospace;">{{ row.slug?.['zh-TW'] || row.slug?.en || '-' }}</el-text>
+          <el-text type="info" size="small" style="font-family: monospace;">{{ row.slug?.en || row.slug?.['zh-TW'] || '-' }}</el-text>
         </template>
       </el-table-column>
       <el-table-column :label="$t('admin.products.price')" width="120">

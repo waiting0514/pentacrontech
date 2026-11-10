@@ -30,7 +30,7 @@ class BannerController extends Controller
         $this->authorize('banner.manage');
         $request->validate([
             'title' => 'required|array',
-            'title.zh-TW' => 'required|string|max:255',
+            'title.en' => 'required|string|max:255',
             'link_url' => 'nullable|array',
             'image_pc' => 'nullable|array',
             'image_pc.*' => 'image|max:5120',

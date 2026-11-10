@@ -27,8 +27,8 @@ class KnowledgeCategoryController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|array',
-            'name.zh-TW' => 'required|string|max:50',
-            'name.en' => 'nullable|string|max:50',
+            'name.en' => 'required|string|max:50',
+            'name.zh-TW' => 'nullable|string|max:50',
             'slug' => 'nullable|array',
             'description' => 'nullable|array',
             'sort_order' => 'integer',
@@ -46,8 +46,8 @@ class KnowledgeCategoryController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|array',
-            'name.zh-TW' => 'sometimes|string|max:50',
-            'name.en' => 'nullable|string|max:50',
+            'name.en' => 'sometimes|string|max:50',
+            'name.zh-TW' => 'nullable|string|max:50',
             'slug' => 'nullable|array',
             'description' => 'nullable|array',
             'sort_order' => 'integer',

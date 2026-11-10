@@ -2,6 +2,8 @@
 
 namespace App\Observers;
 
+
+use App\Models\Language;
 use App\Models\KnowledgeCategory;
 use App\Services\SlugService;
 use Illuminate\Support\Str;
@@ -73,6 +75,6 @@ class KnowledgeCategoryObserver
     protected function getNameForSlug(KnowledgeCategory $category): ?string
     {
         $translations = $category->getTranslations('name');
-        return $translations['zh-TW'] ?? $translations['en'] ?? $category->name ?? null;
+        return $translations[Language::defaultCode()] ?? $translations['en'] ?? $translations['zh-TW'] ?? $category->name ?? null;
     }
 }

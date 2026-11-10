@@ -2,6 +2,8 @@
 
 namespace App\Observers;
 
+
+use App\Models\Language;
 use App\Models\KnowledgeArticle;
 use App\Services\SlugService;
 use Illuminate\Support\Str;
@@ -73,6 +75,6 @@ class KnowledgeArticleObserver
     protected function getTitleForSlug(KnowledgeArticle $article): ?string
     {
         $translations = $article->getTranslations('title');
-        return $translations['zh-TW'] ?? $translations['en'] ?? $article->title ?? null;
+        return $translations[Language::defaultCode()] ?? $translations['en'] ?? $translations['zh-TW'] ?? $article->title ?? null;
     }
 }

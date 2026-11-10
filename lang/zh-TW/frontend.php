@@ -4,10 +4,11 @@ return [
     // Navigation
     'nav' => [
         'main' => '主選單',
+        'skip_to_content' => '跳至主要內容',
         'solutions' => '解決方案',
         'videos' => '影片',
         'all_videos' => '全部影片',
-        'applications' => '產業應用',
+        'applications' => '服務',
         'technology' => '技術',
         'quote' => '詢價 Request Quote',
         'open_menu' => '開啟選單',

@@ -36,7 +36,7 @@ class VideoManagementTest extends TestCase
     {
         return array_merge([
             'youtube_url' => self::URL,
-            'title' => ['zh-TW' => '產品介紹影片', 'en' => 'Product Intro'],
+            'title' => ['en' => '產品介紹影片', 'zh-TW' => 'Product Intro'],
         ], $override);
     }
 
@@ -53,18 +53,18 @@ class VideoManagementTest extends TestCase
         Sanctum::actingAs($this->userWithRole('editor'));
 
         $this->postJson('/api/videos', $this->payload([
-            'description' => ['zh-TW' => '簡介'],
-            'meta_title' => ['zh-TW' => 'SEO 標題'],
-            'meta_description' => ['zh-TW' => 'SEO 描述'],
-            'meta_keywords' => ['zh-TW' => '關鍵字一,關鍵字二'],
+            'description' => ['en' => '簡介'],
+            'meta_title' => ['en' => 'SEO 標題'],
+            'meta_description' => ['en' => 'SEO 描述'],
+            'meta_keywords' => ['en' => '關鍵字一,關鍵字二'],
             'sort_order' => 3,
         ]))
             ->assertCreated()
             ->assertJsonPath('data.youtube_id', 'dQw4w9WgXcQ')
             ->assertJsonPath('data.youtube_url', self::URL)
             ->assertJsonPath('data.is_active', true)
-            ->assertJsonPath('data.meta_title.zh-TW', 'SEO 標題')
-            ->assertJsonPath('data.meta_keywords.zh-TW', '關鍵字一,關鍵字二')
+            ->assertJsonPath('data.meta_title.en', 'SEO 標題')
+            ->assertJsonPath('data.meta_keywords.en', '關鍵字一,關鍵字二')
             ->assertJsonPath('data.thumbnail_url', 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg');
 
         $this->assertDatabaseCount('videos', 1);
@@ -95,10 +95,10 @@ class VideoManagementTest extends TestCase
     {
         Sanctum::actingAs($this->userWithRole('editor'));
 
-        $this->postJson('/api/videos', ['youtube_url' => self::URL, 'title' => ['en' => 'Only EN']])
-            ->assertStatus(422)->assertJsonValidationErrors('title.zh-TW');
+        $this->postJson('/api/videos', ['youtube_url' => self::URL, 'title' => ['zh-TW' => 'Only EN']])
+            ->assertStatus(422)->assertJsonValidationErrors('title.en');
 
-        $this->postJson('/api/videos', ['title' => ['zh-TW' => '標題']])
+        $this->postJson('/api/videos', ['title' => ['en' => '標題']])
             ->assertStatus(422)->assertJsonValidationErrors('youtube_url');
     }
 
@@ -117,16 +117,16 @@ class VideoManagementTest extends TestCase
     {
         Sanctum::actingAs($this->userWithRole('editor'));
 
-        $this->postJson('/api/videos', $this->payload(['title' => ['zh-TW' => 'Factory Tour']]))
+        $this->postJson('/api/videos', $this->payload(['title' => ['en' => 'Factory Tour']]))
             ->assertCreated()->assertJsonPath('data.slug', 'factory-tour');
 
         $this->postJson('/api/videos', $this->payload([
             'youtube_url' => 'https://youtu.be/abcdefghijk',
-            'title' => ['zh-TW' => 'Factory Tour'],
+            'title' => ['en' => 'Factory Tour'],
         ]))->assertCreated()->assertJsonPath('data.slug', 'factory-tour-1');
 
         $this->postJson('/api/videos', $this->payload([
-            'youtube_url' => 'https://youtu.be/ABCDEFGHIJK',
+            'youtube_url' => 'https://youtu.be/ZYXWVUTSRQP',
             'slug' => 'My Custom Slug!',
         ]))->assertCreated()->assertJsonPath('data.slug', 'my-custom-slug');
     }
@@ -146,16 +146,16 @@ class VideoManagementTest extends TestCase
         $id = $this->postJson('/api/videos', $this->payload())->json('data.id');
 
         $this->putJson("/api/videos/{$id}", [
-            'title' => ['zh-TW' => '新標題'],
+            'title' => ['en' => '新標題'],
             'youtube_url' => 'https://youtu.be/abcdefghijk',
             'is_active' => false,
-            'meta_title' => ['zh-TW' => '新 SEO'],
+            'meta_title' => ['en' => '新 SEO'],
         ])
             ->assertOk()
-            ->assertJsonPath('data.title.zh-TW', '新標題')
+            ->assertJsonPath('data.title.en', '新標題')
             ->assertJsonPath('data.youtube_id', 'abcdefghijk')
             ->assertJsonPath('data.is_active', false)
-            ->assertJsonPath('data.meta_title.zh-TW', '新 SEO');
+            ->assertJsonPath('data.meta_title.en', '新 SEO');
     }
 
     public function test_update_with_same_url_is_not_a_duplicate(): void
@@ -163,8 +163,8 @@ class VideoManagementTest extends TestCase
         Sanctum::actingAs($this->userWithRole('editor'));
         $id = $this->postJson('/api/videos', $this->payload())->json('data.id');
 
-        $this->putJson("/api/videos/{$id}", ['youtube_url' => self::URL, 'title' => ['zh-TW' => '改名']])
-            ->assertOk()->assertJsonPath('data.title.zh-TW', '改名');
+        $this->putJson("/api/videos/{$id}", ['youtube_url' => self::URL, 'title' => ['en' => '改名']])
+            ->assertOk()->assertJsonPath('data.title.en', '改名');
     }
 
     public function test_update_with_invalid_url_keeps_original(): void
@@ -181,9 +181,9 @@ class VideoManagementTest extends TestCase
     public function test_update_keeps_slug_when_title_changes(): void
     {
         Sanctum::actingAs($this->userWithRole('editor'));
-        $created = $this->postJson('/api/videos', $this->payload(['title' => ['zh-TW' => 'Old Name']]))->json('data');
+        $created = $this->postJson('/api/videos', $this->payload(['title' => ['en' => 'Old Name']]))->json('data');
 
-        $this->putJson("/api/videos/{$created['id']}", ['title' => ['zh-TW' => 'New Name']])
+        $this->putJson("/api/videos/{$created['id']}", ['title' => ['en' => 'New Name']])
             ->assertOk()->assertJsonPath('data.slug', $created['slug']);
     }
 
@@ -199,10 +199,10 @@ class VideoManagementTest extends TestCase
     public function test_list_is_ordered_by_sort_order(): void
     {
         Sanctum::actingAs($this->userWithRole('editor'));
-        $this->postJson('/api/videos', $this->payload(['title' => ['zh-TW' => 'B'], 'sort_order' => 2]));
-        $this->postJson('/api/videos', $this->payload(['youtube_url' => 'https://youtu.be/abcdefghijk', 'title' => ['zh-TW' => 'A'], 'sort_order' => 1]));
+        $this->postJson('/api/videos', $this->payload(['title' => ['en' => 'B'], 'sort_order' => 2]));
+        $this->postJson('/api/videos', $this->payload(['youtube_url' => 'https://youtu.be/abcdefghijk', 'title' => ['en' => 'A'], 'sort_order' => 1]));
 
-        $titles = collect($this->getJson('/api/videos')->assertOk()->json('data'))->pluck('title.zh-TW')->all();
+        $titles = collect($this->getJson('/api/videos')->assertOk()->json('data'))->pluck('title.en')->all();
 
         $this->assertSame(['A', 'B'], $titles);
     }

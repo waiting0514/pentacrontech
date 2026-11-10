@@ -8,11 +8,16 @@
     $nav = [
         ['key' => 'products', 'url' => lroute('products.index'), 'on' => $is('products*', '*/products*', 'category/*', '*/category/*'), 'en' => 'Products'],
         ['key' => 'videos', 'url' => lroute('videos.index'), 'on' => $is('videos*', '*/videos*'), 'en' => 'Videos'],
-        ['key' => 'applications', 'url' => lroute('home') . '#applications', 'on' => false, 'en' => 'Applications'],
+        ['key' => 'applications', 'url' => lroute('home') . '#applications', 'on' => false, 'en' => 'Service'],
         ['key' => 'technology', 'url' => lroute('knowledge.index'), 'on' => $is('knowledge*', '*/knowledge*'), 'en' => 'Technology'],
         ['key' => 'about', 'url' => lroute('about'), 'on' => $is('about*', '*/about*'), 'en' => 'About'],
         ['key' => 'news', 'url' => lroute('news.index'), 'on' => $is('news*', '*/news*'), 'en' => 'News'],
     ];
+
+    // 暫時隱藏的選單（設定於 config/frontend.php 的 hidden_nav）
+    $hiddenNav = config('frontend.hidden_nav', []);
+    $showProductsMenu = !in_array('products', $hiddenNav, true);
+    $nav = array_values(array_filter($nav, fn ($item) => !in_array($item['key'], $hiddenNav, true)));
 @endphp
 
 <header x-data="{ open: false, sub: false, scrolled: false }"
@@ -62,6 +67,7 @@
         </div>
 
         <nav style="flex:1;overflow-y:auto" aria-label="{{ __('frontend.nav.main') }}">
+            @if($showProductsMenu)
             <button type="button" class="ix-drawer-it" @click="sub = !sub" :aria-expanded="sub.toString()" style="box-shadow: inset 3px 0 0 #168BD2">
                 <span>{{ __('frontend.nav.products') }}<span class="en">Products</span></span>
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#5AB4EC" stroke-width="1.5" :style="sub ? 'transform: rotate(180deg)' : ''" aria-hidden="true"><path d="M3 5l4 4 4-4"/></svg>
@@ -72,7 +78,8 @@
                 @endforeach
                 <a href="{{ lroute('products.index') }}" style="color:#5AB4EC">{{ __('frontend.nav.all_products') }} →</a>
             </div>
-            @foreach(array_slice($nav, 1) as $item)
+            @endif
+            @foreach(collect($nav)->reject(fn ($i) => $i['key'] === 'products') as $item)
                 <a href="{{ $item['url'] }}" class="ix-drawer-it" @click="open = false"><span>{{ __('frontend.nav.' . $item['key']) }}<span class="en">{{ $item['en'] }}</span></span></a>
             @endforeach
         </nav>

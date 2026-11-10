@@ -8,6 +8,7 @@ import { useLanguageStore } from '../../store/modules/language';
 const { proxy } = getCurrentInstance();
 const languageStore = useLanguageStore();
 const languages = computed(() => languageStore.languages);
+const defaultLangCode = computed(() => (languages.value.find(l => l.is_default) || languages.value[0])?.code || 'en');
 
 const banners = ref([]);
 const showDialog = ref(false);
@@ -51,7 +52,7 @@ const ensureObject = (val) => {
             const parsed = JSON.parse(val);
             return typeof parsed === 'object' ? parsed : {};
         } catch (e) {
-            return { 'zh-TW': val };
+            return { en: val };
         }
     }
     return {};
@@ -242,9 +243,9 @@ onMounted(() => {
       </el-table-column>
       <el-table-column :label="$t('admin.table.title')">
         <template #default="{ row }">
-          <div style="font-weight: bold;">{{ row.title?.['zh-TW'] || row.title?.en }}</div>
-          <div v-if="row.link_url?.['zh-TW'] || row.link_url?.en" style="font-size: 12px; color: #909399;">
-            {{ row.link_url?.['zh-TW'] || row.link_url?.en }}
+          <div style="font-weight: bold;">{{ row.title?.en || row.title?.['zh-TW'] }}</div>
+          <div v-if="row.link_url?.en || row.link_url?.['zh-TW']" style="font-size: 12px; color: #909399;">
+            {{ row.link_url?.en || row.link_url?.['zh-TW'] }}
           </div>
         </template>
       </el-table-column>
@@ -309,7 +310,7 @@ onMounted(() => {
                     />
                     <div v-else style="color: #909399; font-size: 12px; text-align: center; padding: 0 10px;">
                       {{ $t('admin.products.drag_upload') }}<br>
-                      <span v-if="lang.code !== 'zh-TW'" style="color: #e6a23c;">(留空將回退顯示中文圖片)</span>
+                      <span v-if="lang.code !== defaultLangCode" style="color: #e6a23c;">(Leave empty to fall back to the default-language image)</span>
                     </div>
                   </div>
                 </el-col>
@@ -329,7 +330,7 @@ onMounted(() => {
                     />
                     <div v-else style="color: #909399; font-size: 12px; text-align: center; padding: 0 10px;">
                       {{ $t('admin.products.drag_upload') }}<br>
-                      <span v-if="lang.code !== 'zh-TW'" style="color: #e6a23c;">(留空將回退顯示中文圖片)</span>
+                      <span v-if="lang.code !== defaultLangCode" style="color: #e6a23c;">(Leave empty to fall back to the default-language image)</span>
                     </div>
                   </div>
                 </el-col>

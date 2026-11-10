@@ -32,8 +32,8 @@ class ProductInquiryTest extends TestCase
         $user->assignRole('super-admin');
 
         $response = $this->actingAs($user, 'sanctum')->postJson('/api/products', [
-            'name' => ['zh-TW' => 'Test Product'],
-            'description' => ['zh-TW' => 'Desc'],
+            'name' => ['en' => 'Test Product'],
+            'description' => ['en' => 'Desc'],
             'price' => 100,
             'is_inquiry_only' => true
         ]);

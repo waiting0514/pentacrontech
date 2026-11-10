@@ -43,7 +43,7 @@ const emptyForm = () => ({
 
 const form = ref(emptyForm());
 
-const displayTitle = (row) => row.title?.['zh-TW'] || row.title?.en || '(未命名)';
+const displayTitle = (row) => row.title?.en || row.title?.['zh-TW'] || '(未命名)';
 
 const fetchVideos = async () => {
     loading.value = true;
@@ -105,9 +105,9 @@ const saveVideo = async () => {
         errors.value = { youtube_url: ['請輸入 YouTube 網址'] };
         return;
     }
-    if (!(form.value.title['zh-TW'] || '').trim()) {
-        errors.value = { 'title.zh-TW': ['請輸入中文名稱'] };
-        activeTab.value = 'zh-TW';
+    if (!(form.value.title.en || '').trim()) {
+        errors.value = { 'title.en': ['Please enter an English title'] };
+        activeTab.value = 'en';
         return;
     }
 
@@ -253,8 +253,8 @@ onMounted(() => {
           <el-tab-pane v-for="lang in languages" :key="lang.code" :label="lang.name" :name="lang.code">
             <el-form-item
               :label="'名稱'"
-              :required="lang.code === 'zh-TW'"
-              :error="firstError(`title.${lang.code}`) || (lang.code === 'zh-TW' ? firstError('title') : '')"
+              :required="lang.code === 'en'"
+              :error="firstError(`title.${lang.code}`) || (lang.code === 'en' ? firstError('title') : '')"
             >
               <el-input v-model="form.title[lang.code]" />
             </el-form-item>

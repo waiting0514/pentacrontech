@@ -45,7 +45,7 @@ const ensureObject = (val) => {
             const parsed = JSON.parse(val);
             return typeof parsed === 'object' ? parsed : {};
         } catch (e) {
-            return { 'zh-TW': val };
+            return { en: val };
         }
     }
     return {};

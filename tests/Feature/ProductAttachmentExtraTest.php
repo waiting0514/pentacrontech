@@ -617,11 +617,20 @@ class ProductAttachmentExtraTest extends TestCase
         return $attachment;
     }
 
+    /**
+     * slug 只存於建立時的語系；請求會切換 app locale，讀取 slug 時要固定取已儲存的那一筆，
+     * 否則第二次請求會拿到空字串而 404。
+     */
+    private function productSlug(): string
+    {
+        return (string) collect($this->product->getTranslations('slug'))->first();
+    }
+
     private function page(string $locale)
     {
         $prefix = $locale === 'zh-TW' ? '' : "/{$locale}";
 
-        return $this->get("{$prefix}/products/{$this->product->id}-".$this->product->slug);
+        return $this->get("{$prefix}/products/{$this->product->id}-".$this->productSlug());
     }
 
     public function test_frontend_falls_back_to_default_file_after_locale_file_is_deleted(): void

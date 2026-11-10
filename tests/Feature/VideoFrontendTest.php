@@ -116,9 +116,30 @@ class VideoFrontendTest extends TestCase
         $this->get('/videos/99999-nothing')->assertNotFound();
     }
 
-    public function test_footer_links_to_video_list(): void
+    public function test_footer_links_to_video_list_when_not_hidden(): void
     {
+        config(['frontend.hidden_nav' => []]);
+
         $this->get('/about')->assertOk()->assertSee(url('/videos'), false);
+    }
+
+    public function test_video_and_product_links_are_hidden_from_navigation_by_default(): void
+    {
+        $this->assertSame(['products', 'videos'], config('frontend.hidden_nav'));
+
+        $html = $this->get('/about')->assertOk()->getContent();
+
+        // 只檢查選單區塊（header 主選單、手機選單、footer 欄位），內文可能有其他連結
+        preg_match('#<nav class="ix-nav".*?</nav>#s', $html, $headerNav);
+        $this->assertNotEmpty($headerNav);
+        $this->assertStringNotContainsString(url('/products'), $headerNav[0]);
+        $this->assertStringNotContainsString(url('/videos'), $headerNav[0]);
+        $this->assertStringContainsString('#applications', $headerNav[0]);
+        $this->assertStringContainsString('>'.__('frontend.nav.applications').'<', $headerNav[0]);
+
+        preg_match('#<footer.*</footer>#s', $html, $footer);
+        $this->assertStringNotContainsString(url('/videos'), $footer[0]);
+        $this->assertStringNotContainsString(url('/products'), $footer[0]);
     }
 
     public function test_sitemap_includes_active_videos_only(): void

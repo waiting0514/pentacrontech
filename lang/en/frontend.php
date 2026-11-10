@@ -4,10 +4,11 @@ return [
     // Navigation
     'nav' => [
         'main' => 'Main menu',
+        'skip_to_content' => 'Skip to main content',
         'solutions' => 'Solutions',
         'videos' => 'Videos',
         'all_videos' => 'All videos',
-        'applications' => 'Applications',
+        'applications' => 'Service',
         'technology' => 'Technology',
         'quote' => 'Request Quote',
         'open_menu' => 'Open menu',

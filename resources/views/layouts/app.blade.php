@@ -29,7 +29,7 @@
 <body class="font-sans antialiased bg-white text-ink flex min-h-screen flex-col">
     {{-- Skip to main content for accessibility --}}
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[70] ind-btn px-4 py-2">
-        跳至主要內容
+        {{ __('frontend.nav.skip_to_content') }}
     </a>
 
     {{-- Header --}}

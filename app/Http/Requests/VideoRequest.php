@@ -36,7 +36,7 @@ class VideoRequest extends FormRequest
                 }
             }],
             'title' => [$required, 'array'],
-            'title.zh-TW' => [$required, 'string', 'max:255'],
+            'title.en' => [$required, 'string', 'max:255'],
             'title.*' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'array'],
             'description.*' => ['nullable', 'string', 'max:5000'],

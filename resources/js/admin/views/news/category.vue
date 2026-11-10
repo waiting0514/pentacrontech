@@ -40,7 +40,7 @@ const ensureObject = (val) => {
             const parsed = JSON.parse(val);
             return typeof parsed === 'object' ? parsed : {};
         } catch (e) {
-            return { 'zh-TW': val };
+            return { en: val };
         }
     }
     return {};
@@ -103,13 +103,13 @@ onMounted(() => { languageStore.fetchLanguages(); fetchCategories(); });
     <el-table :data="categories" border stripe>
       <el-table-column :label="$t('admin.categories.name')">
         <template #default="{ row }">
-          {{ typeof row.name === 'object' ? (row.name?.['zh-TW'] || row.name?.en) : row.name }}
+          {{ typeof row.name === 'object' ? (row.name?.en || row.name?.['zh-TW']) : row.name }}
         </template>
       </el-table-column>
       <el-table-column :label="$t('admin.categories.url_slug')">
         <template #default="{ row }">
           <el-text type="info" size="small" style="font-family: monospace;">
-            {{ typeof row.slug === 'object' ? (row.slug?.['zh-TW'] || row.slug?.en) : row.slug }}
+            {{ typeof row.slug === 'object' ? (row.slug?.en || row.slug?.['zh-TW']) : row.slug }}
           </el-text>
         </template>
       </el-table-column>

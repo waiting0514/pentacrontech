@@ -2,6 +2,8 @@
 
 namespace App\Observers;
 
+
+use App\Models\Language;
 use App\Models\News;
 use App\Services\SlugService;
 use Illuminate\Support\Str;
@@ -73,6 +75,6 @@ class NewsObserver
     protected function getTitleForSlug(News $news): ?string
     {
         $translations = $news->getTranslations('title');
-        return $translations['zh-TW'] ?? $translations['en'] ?? $news->title ?? null;
+        return $translations[Language::defaultCode()] ?? $translations['en'] ?? $translations['zh-TW'] ?? $news->title ?? null;
     }
 }

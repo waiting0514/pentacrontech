@@ -31,7 +31,7 @@ class KnownIssuesFixTest extends TestCase
             ->syncPermissions(['product.view', 'product.update']);
 
         $this->setting = SiteSetting::create([
-            'name' => ['zh-TW' => '測試網站'],
+            'name' => ['en' => 'Test Site', 'zh-TW' => '測試網站'],
             'yearly_budget_twd' => 1000,
         ]);
     }
@@ -138,7 +138,7 @@ class KnownIssuesFixTest extends TestCase
 
     public function test_login_page_shows_site_name(): void
     {
-        $this->get('/login')->assertOk()->assertSee('測試網站');
+        $this->get('/login')->assertOk()->assertSee(\App\Models\SiteSetting::current()->name);
     }
 
     public function test_rag_search_matches_zh_tw_name(): void

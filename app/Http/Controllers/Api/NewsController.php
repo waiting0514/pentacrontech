@@ -37,12 +37,12 @@ class NewsController extends Controller
         $this->authorize('news.create');
         $validated = $request->validate([
             'title' => 'required|array',
-            'title.zh-TW' => 'required|string|max:255',
-            'title.en' => 'nullable|string|max:255',
+            'title.en' => 'required|string|max:255',
+            'title.zh-TW' => 'nullable|string|max:255',
             'slug' => 'nullable|array',
             'content' => 'required|array',
-            'content.zh-TW' => 'required|string',
-            'content.en' => 'nullable|string',
+            'content.en' => 'required|string',
+            'content.zh-TW' => 'nullable|string',
             'image_url' => 'nullable|url',
             'category_id' => 'nullable|exists:news_categories,id',
             'meta_title' => 'nullable|array',
@@ -68,12 +68,12 @@ class NewsController extends Controller
         $this->authorize('news.update');
         $validated = $request->validate([
             'title' => 'sometimes|array',
-            'title.zh-TW' => 'sometimes|string|max:255',
-            'title.en' => 'nullable|string|max:255',
+            'title.en' => 'sometimes|string|max:255',
+            'title.zh-TW' => 'nullable|string|max:255',
             'slug' => 'nullable|array',
             'content' => 'sometimes|array',
-            'content.zh-TW' => 'sometimes|string',
-            'content.en' => 'nullable|string',
+            'content.en' => 'sometimes|string',
+            'content.zh-TW' => 'nullable|string',
             'image_url' => 'nullable|url',
             'category_id' => 'nullable|exists:news_categories,id',
             'meta_title' => 'nullable|array',

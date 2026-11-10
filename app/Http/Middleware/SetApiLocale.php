@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Language;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -13,7 +14,7 @@ class SetApiLocale
     {
         $locale = $request->header('Accept-Language', config('app.locale'));
 
-        if (in_array($locale, ['zh-TW', 'en'])) {
+        if (in_array($locale, Language::activeCodes(), true)) {
             App::setLocale($locale);
         }
 

@@ -2,6 +2,8 @@
 
 namespace App\Observers;
 
+
+use App\Models\Language;
 use App\Models\Video;
 use Illuminate\Support\Str;
 use Overtrue\Pinyin\Pinyin;
@@ -34,7 +36,7 @@ class VideoObserver
     protected function slugFromTitle(Video $video): string
     {
         $titles = $video->getTranslations('title');
-        $title = $titles['zh-TW'] ?? $titles['en'] ?? (reset($titles) ?: '');
+        $title = $titles[Language::defaultCode()] ?? $titles['en'] ?? $titles['zh-TW'] ?? (reset($titles) ?: '');
 
         $slug = Str::slug($title);
         if ($slug === '') {

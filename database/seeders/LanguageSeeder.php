@@ -22,13 +22,13 @@ class LanguageSeeder extends Seeder
             ]
         );
 
-        // Optional: Traditional Chinese
+        // Traditional Chinese: currently unused, kept inactive (enable in the languages table when needed)
         Language::firstOrCreate(
             ['code' => 'zh-TW'],
             [
                 'name' => '繁體中文',
                 'is_default' => false,
-                'is_active' => true,
+                'is_active' => false,
             ]
         );
     }

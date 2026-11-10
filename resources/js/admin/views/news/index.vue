@@ -78,7 +78,7 @@ const editNews = (news) => {
                 const parsed = JSON.parse(val);
                 return typeof parsed === 'object' ? parsed : {};
             } catch (e) {
-                return { 'zh-TW': val };
+                return { en: val };
             }
         }
         return {};
@@ -158,19 +158,19 @@ onMounted(() => { languageStore.fetchLanguages(); fetchNews(); fetchCategories()
     <el-table :data="newsList" border stripe>
       <el-table-column :label="$t('admin.news.news_title')">
         <template #default="{ row }">
-          {{ typeof row.title === 'object' ? (row.title?.['zh-TW'] || row.title?.en) : row.title }}
+          {{ typeof row.title === 'object' ? (row.title?.en || row.title?.['zh-TW']) : row.title }}
         </template>
       </el-table-column>
       <el-table-column label="Slug" width="180">
         <template #default="{ row }">
           <el-text type="info" size="small" style="font-family: monospace;">
-            {{ typeof row.slug === 'object' ? (row.slug?.['zh-TW'] || row.slug?.en) : row.slug }}
+            {{ typeof row.slug === 'object' ? (row.slug?.en || row.slug?.['zh-TW']) : row.slug }}
           </el-text>
         </template>
       </el-table-column>
       <el-table-column :label="$t('admin.news.category')" width="140">
         <template #default="{ row }">
-          <el-tag v-if="row.category" size="small">{{ row.category?.name?.['zh-TW'] || row.category?.name?.en || '-' }}</el-tag>
+          <el-tag v-if="row.category" size="small">{{ row.category?.name?.en || row.category?.name?.['zh-TW'] || '-' }}</el-tag>
           <span v-else style="color: #909399;">-</span>
         </template>
       </el-table-column>
@@ -214,7 +214,7 @@ onMounted(() => { languageStore.fetchLanguages(); fetchNews(); fetchCategories()
         </el-form-item>
         <el-form-item :label="$t('admin.news.category')">
           <el-select v-model="form.category_id" :placeholder="$t('admin.news.no_category')" clearable>
-            <el-option v-for="cat in categoryOptions" :key="cat.id" :label="cat.name?.['zh-TW'] || cat.name?.en" :value="cat.id" />
+            <el-option v-for="cat in categoryOptions" :key="cat.id" :label="cat.name?.en || cat.name?.['zh-TW']" :value="cat.id" />
           </el-select>
         </el-form-item>
 

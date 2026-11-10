@@ -44,8 +44,8 @@ class SiteSettingController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|array',
-            'name.zh-TW' => 'nullable|string|max:255',
             'name.en' => 'nullable|string|max:255',
+            'name.zh-TW' => 'nullable|string|max:255',
             'logo_url' => 'nullable|string|max:2048',
             'description' => 'nullable|string',
             'yearly_budget_twd' => 'sometimes|numeric|min:0',

@@ -2,6 +2,8 @@
 
 namespace App\Observers;
 
+
+use App\Models\Language;
 use App\Models\ProductCategory;
 use App\Services\SlugService;
 use Illuminate\Support\Str;
@@ -104,11 +106,15 @@ class ProductCategoryObserver
     protected function getNameForSlug(ProductCategory $category): ?string
     {
         $translations = $category->getTranslations('name');
-        if (isset($translations['zh-TW']) && $translations['zh-TW'] !== '') {
-            return $translations['zh-TW'];
+        $default = Language::defaultCode();
+        if (isset($translations[$default]) && $translations[$default] !== '') {
+            return $translations[$default];
         }
         if (isset($translations['en']) && $translations['en'] !== '') {
             return $translations['en'];
+        }
+        if (isset($translations['zh-TW']) && $translations['zh-TW'] !== '') {
+            return $translations['zh-TW'];
         }
         if (!empty($translations)) {
             foreach ($translations as $val) {
